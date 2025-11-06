@@ -1,547 +1,637 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Somador de Planilhas - Versão Aprimorada</title>
-    <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: linear-gradient(45deg, #4CAF50, #45a049); color: white; padding: 30px; text-align: center; }
-        .header h1 { font-size: 2.5em; margin-bottom: 10px; font-weight: 700; }
-        .header p { font-size: 1.1em; opacity: 0.9; }
-        .content { padding: 30px; }
-        .upload-section { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
-        .upload-box { background: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 15px; padding: 30px; text-align: center; transition: all 0.3s ease; position: relative; }
-        .upload-box:hover { border-color: #4CAF50; background: #f0f9ff; }
-        .upload-box.dragover { border-color: #4CAF50; background: #e8f5e8; transform: scale(1.02); }
-        .upload-box h3 { color: #333; margin-bottom: 15px; font-size: 1.3em; }
-        .file-input { display: none; }
-        .upload-btn { background: #4CAF50; color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; font-size: 1em; transition: all 0.3s ease; margin: 10px 0; }
-        .upload-btn:hover { background: #45a049; transform: translateY(-2px); }
-        .file-info { margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 8px; font-size: 0.9em; color: #1565c0; }
-        .controls { display: flex; gap: 15px; justify-content: center; margin: 30px 0; flex-wrap: wrap; }
-        .btn { padding: 15px 30px; border: none; border-radius: 25px; cursor: pointer; font-size: 1em; font-weight: 600; transition: all 0.3s ease; min-width: 200px; }
-        .btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
-        .btn-primary { background: #4CAF50; color: white; }
-        .btn-primary:hover:not(:disabled) { background: #45a049; transform: translateY(-2px); }
-        .btn-secondary { background: #2196F3; color: white; }
-        .btn-secondary:hover:not(:disabled) { background: #1976D2; transform: translateY(-2px); }
-        .status-section { margin: 20px 0; padding: 20px; border-radius: 10px; display: none; }
-        .status-info { background: #e3f2fd; border: 1px solid #bbdefb; color: #1565c0; }
-        .status-error { background: #ffebee; border: 1px solid #ffcdd2; color: #c62828; }
-        .status-success { background: #e8f5e8; border: 1px solid #c8e6c9; color: #2e7d32; }
-        .results-section { margin-top: 30px; display: none; }
-        .results-header { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
-        .results-header h3 { color: #333; margin-bottom: 10px; }
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
-        .stat-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
-        .stat-number { font-size: 2em; font-weight: bold; color: #4CAF50; }
-        .stat-label { color: #666; margin-top: 5px; }
-        .table-container { overflow-x: auto; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .results-table { width: 100%; border-collapse: collapse; background: white; }
-        .results-table th { background: #4CAF50; color: white; padding: 15px; text-align: left; font-weight: 600; }
-        .results-table td { padding: 12px 15px; border-bottom: 1px solid #eee; }
-        .results-table tbody tr:hover { background: #f8f9fa; }
-        .action-buttons { margin-top: 20px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
-        .loading { display: none; text-align: center; padding: 20px; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #4CAF50; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .error-details { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin: 15px 0; display: none; }
-        .error-details h4 { color: #856404; margin-bottom: 10px; }
-        .error-list { color: #856404; font-size: 0.9em; }
-        @media (max-width: 768px) { .upload-section { grid-template-columns: 1fr; gap: 20px; } .header h1 { font-size: 2em; } .stats { grid-template-columns: 1fr; } .controls { flex-direction: column; align-items: center; } }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Somador de Planilhas - v2 com Abas</title>
+  <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px}
+    .container{max-width:1200px;margin:0 auto;background:#fff;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,.1);overflow:hidden}
+    .header{background:linear-gradient(45deg,#4CAF50,#45a049);color:#fff;padding:30px;text-align:center}
+    .header h1{font-size:2.2em;margin-bottom:6px;font-weight:700}
+    .header p{opacity:.95}
+
+    /* TABS */
+    .tabs{display:flex;gap:8px;background:#f3f5f7;padding:10px 10px 0 10px;border-bottom:1px solid #e7e7e7}
+    .tab-btn{appearance:none;border:0;background:#e9eef3;padding:10px 16px;border-top-left-radius:10px;border-top-right-radius:10px;font-weight:600;cursor:pointer;transition:.2s}
+    .tab-btn.active{background:#fff;box-shadow:0 -2px 8px rgba(0,0,0,.05)}
+    .tab-pane{display:none;padding:20px 30px 30px 30px}
+    .tab-pane.active{display:block}
+
+    .upload-section{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin:20px 0 30px}
+    .upload-box{background:#f8f9fa;border:2px dashed #dee2e6;border-radius:15px;padding:30px;text-align:center;transition:.3s;position:relative}
+    .upload-box:hover{border-color:#4CAF50;background:#f0f9ff}
+    .upload-box.dragover{border-color:#4CAF50;background:#e8f5e8;transform:scale(1.02)}
+    .upload-box h3{color:#333;margin-bottom:15px;font-size:1.15em}
+    .file-input{display:none}
+    .upload-btn{background:#4CAF50;color:#fff;border:none;padding:12px 25px;border-radius:25px;cursor:pointer;font-size:1em;transition:.2s;margin:10px 0}
+    .upload-btn:hover{background:#45a049;transform:translateY(-2px)}
+    .file-info{margin-top:15px;padding:10px;background:#e3f2fd;border-radius:8px;font-size:.9em;color:#1565c0}
+
+    .controls{display:flex;gap:12px;justify-content:center;margin:10px 0 25px;flex-wrap:wrap}
+    .btn{padding:14px 22px;border:none;border-radius:25px;cursor:pointer;font-size:1em;font-weight:600;transition:.2s;min-width:190px}
+    .btn:disabled{background:#ccc;cursor:not-allowed;transform:none}
+    .btn-primary{background:#4CAF50;color:#fff}
+    .btn-primary:hover:not(:disabled){background:#45a049;transform:translateY(-2px)}
+    .btn-secondary{background:#2196F3;color:#fff}
+    .btn-secondary:hover:not(:disabled){background:#1976D2;transform:translateY(-2px)}
+
+    .status-section{margin:15px 0;padding:16px;border-radius:10px;display:none}
+    .status-info{background:#e3f2fd;border:1px solid #bbdefb;color:#1565c0}
+    .status-error{background:#ffebee;border:1px solid #ffcdd2;color:#c62828}
+    .status-success{background:#e8f5e8;border:1px solid #c8e6c9;color:#2e7d32}
+    .error-details{background:#fff3cd;border:1px solid #ffeaa7;border-radius:8px;padding:15px;margin:10px 0 20px;display:none}
+    .error-details h4{color:#856404;margin-bottom:8px}
+    .error-list{color:#856404;font-size:.92em}
+
+    .results-section{margin-top:10px;display:none}
+    .results-header{background:#f8f9fa;padding:16px;border-radius:10px;margin-bottom:14px}
+    .results-header h3{color:#333;margin-bottom:10px}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:8px 0}
+    .stat-card{background:#fff;padding:16px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.06);text-align:center}
+    .stat-number{font-size:1.7em;font-weight:800;color:#4CAF50}
+    .stat-label{color:#666;margin-top:2px}
+    .table-container{overflow-x:auto;border-radius:10px;box-shadow:0 5px 15px rgba(0,0,0,.08)}
+    .results-table{width:100%;border-collapse:collapse;background:#fff}
+    .results-table th{background:#4CAF50;color:#fff;padding:14px;text-align:left;font-weight:600}
+    .results-table td{padding:11px 14px;border-bottom:1px solid #eee}
+    .results-table tbody tr:hover{background:#f8f9fa}
+    .action-buttons{margin-top:16px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+    .loading{display:none;text-align:center;padding:14px}
+    .spinner{border:4px solid #f3f3f3;border-top:4px solid #4CAF50;border-radius:50%;width:38px;height:38px;animation:spin 1s linear infinite;margin:0 auto 10px}
+    @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+
+    @media (max-width:768px){
+      .upload-section{grid-template-columns:1fr;gap:20px}
+      .header h1{font-size:1.9em}
+      .stats{grid-template-columns:1fr}
+      .controls{flex-direction:column;align-items:center}
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📊 Somador de Planilhas</h1>
-            <p>Ferramenta para somar valores das colunas G (Rlz.) e R (D-0) de duas planilhas Excel</p>
-        </div>
-
-        <div class="content">
-            <div class="upload-section">
-                <div class="upload-box" id="uploadBox1">
-                    <h3>📊 Planilha 1</h3>
-                    <input type="file" id="file1" class="file-input" accept=".xlsx,.xls">
-                    <button class="upload-btn" onclick="document.getElementById('file1').click()">Selecionar Arquivo</button>
-                    <div class="file-info" id="fileInfo1">Nenhum arquivo selecionado</div>
-                </div>
-                <div class="upload-box" id="uploadBox2">
-                    <h3>📈 Planilha 2</h3>
-                    <input type="file" id="file2" class="file-input" accept=".xlsx,.xls">
-                    <button class="upload-btn" onclick="document.getElementById('file2').click()">Selecionar Arquivo</button>
-                    <div class="file-info" id="fileInfo2">Nenhum arquivo selecionado</div>
-                </div>
-            </div>
-
-            <div class="controls">
-                <button class="btn btn-secondary" id="verifyBtn" onclick="verificarErros()" disabled>🔍 Verificar Erros</button>
-                <button class="btn btn-primary" id="processBtn" onclick="processarPlanilhas()" disabled>🔢 Processar e Somar</button>
-            </div>
-
-            <div id="statusSection" class="status-section">
-                <div id="statusMessage"></div>
-            </div>
-
-            <div id="errorDetails" class="error-details">
-                <h4>📋 Detalhes da Verificação</h4>
-                <div id="errorList" class="error-list"></div>
-            </div>
-
-            <div id="loadingSection" class="loading">
-                <div class="spinner"></div>
-                <p>Processando planilhas...</p>
-            </div>
-
-            <div id="resultsSection" class="results-section">
-                <div class="results-header">
-                    <h3>📊 Resultados da Soma</h3>
-                    <div class="stats" id="statsContainer"></div>
-                </div>
-
-                <div class="table-container">
-                    <table class="results-table" id="resultsTable">
-                        <thead>
-                            <tr>
-                                <th>Prefixo (A)</th>
-                                <th>Dependência (B)</th>
-                                <th>Carteira (D)</th>
-                                <th>Tipo Carteira (E)</th>
-                                <th>Coluna G (Rlz.)</th>
-                                <th>Coluna R (D-0)</th>
-                                <th>Total Soma</th>
-                            </tr>
-                        </thead>
-                        <tbody id="resultsBody"></tbody>
-                    </table>
-                </div>
-
-                <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="copiarTabela()">📋 Copiar Tabela</button>
-                    <button class="btn btn-secondary" onclick="exportarExcel()">📥 Exportar para Excel</button>
-                    <button class="btn btn-secondary" onclick="limparResultados()">🗑️ Limpar Resultados</button>
-                </div>
-            </div>
-        </div>
+  <div class="container">
+    <div class="header">
+      <h1>📊 Somador de Planilhas</h1>
+      <p>Agora com duas abas: (1) Duas planilhas (G + R) e (2) Planilha única somando G + AT</p>
     </div>
 
-    <script>
-        // Variáveis globais
-        let planilha1Data = null;
-        let planilha2Data = null;
-        let file1Name = '';
-        let file2Name = '';
-        let resultadosOriginais = [];
-        let errosEncontrados = [];
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tabBtn1" onclick="showTab(1)">Aba 1 — Duas planilhas (G + R)</button>
+      <button class="tab-btn" id="tabBtn2" onclick="showTab(2)">Aba 2 — Única (G + AT)</button>
+    </div>
 
-        // Drag and drop
-        setupDragAndDrop();
-        function setupDragAndDrop() {
-            const uploadBoxes = document.querySelectorAll('.upload-box');
-            uploadBoxes.forEach(box => {
-                box.addEventListener('dragover', (e) => { e.preventDefault(); box.classList.add('dragover'); });
-                box.addEventListener('dragleave', (e) => { e.preventDefault(); box.classList.remove('dragover'); });
-                box.addEventListener('drop', (e) => {
-                    e.preventDefault(); box.classList.remove('dragover');
-                    const files = e.dataTransfer.files;
-                    if (files.length > 0) {
-                        const input = box.querySelector('.file-input');
-                        input.files = files;
-                        handleFileSelect(input, box.id);
-                    }
-                });
-            });
+    <!-- =================== ABA 1 (já existente) =================== -->
+    <div class="tab-pane active" id="tab1">
+      <div class="upload-section">
+        <div class="upload-box" id="uploadBox1">
+          <h3>📊 Planilha 1</h3>
+          <input type="file" id="file1" class="file-input" accept=".xlsx,.xls">
+          <button class="upload-btn" onclick="document.getElementById('file1').click()">Selecionar Arquivo</button>
+          <div class="file-info" id="fileInfo1">Nenhum arquivo selecionado</div>
+        </div>
+        <div class="upload-box" id="uploadBox2">
+          <h3>📈 Planilha 2</h3>
+          <input type="file" id="file2" class="file-input" accept=".xlsx,.xls">
+          <button class="upload-btn" onclick="document.getElementById('file2').click()">Selecionar Arquivo</button>
+          <div class="file-info" id="fileInfo2">Nenhum arquivo selecionado</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-secondary" id="verifyBtn" onclick="verificarErros()" disabled>🔍 Verificar Erros</button>
+        <button class="btn btn-primary" id="processBtn" onclick="processarPlanilhas()" disabled>🔢 Processar e Somar</button>
+      </div>
+
+      <div id="statusSection" class="status-section"><div id="statusMessage"></div></div>
+      <div id="errorDetails" class="error-details">
+        <h4>📋 Detalhes da Verificação</h4>
+        <div id="errorList" class="error-list"></div>
+      </div>
+      <div id="loadingSection" class="loading"><div class="spinner"></div><p>Processando planilhas...</p></div>
+
+      <div id="resultsSection" class="results-section">
+        <div class="results-header">
+          <h3>📊 Resultados da Soma (G + R)</h3>
+          <div class="stats" id="statsContainer"></div>
+        </div>
+        <div class="table-container">
+          <table class="results-table" id="resultsTable">
+            <thead>
+              <tr>
+                <th>Prefixo (A)</th>
+                <th>Dependência (B)</th>
+                <th>Carteira (D)</th>
+                <th>Tipo Carteira (E)</th>
+                <th>Coluna G (Rlz.)</th>
+                <th>Coluna R (D-0)</th>
+                <th>Total Soma</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+        <div class="action-buttons">
+          <button class="btn btn-primary" onclick="copiarTabela()">📋 Copiar Tabela</button>
+          <button class="btn btn-secondary" onclick="exportarExcel()">📥 Exportar Excel</button>
+          <button class="btn btn-secondary" onclick="limparResultados()">🗑️ Limpar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== ABA 2 (NOVA: planilha única G + AT) =================== -->
+    <div class="tab-pane" id="tab2">
+      <div class="upload-section" style="grid-template-columns:1fr;">
+        <div class="upload-box" id="uploadBoxSingle">
+          <h3>📄 Planilha Única (somar G + AT)</h3>
+          <input type="file" id="fileSingle" class="file-input" accept=".xlsx,.xls">
+          <button class="upload-btn" onclick="document.getElementById('fileSingle').click()">Selecionar Arquivo</button>
+          <div class="file-info" id="fileInfoSingle">Nenhum arquivo selecionado</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-secondary" id="verifySingleBtn" onclick="verificarErrosSingle()" disabled>🔍 Verificar</button>
+        <button class="btn btn-primary" id="processSingleBtn" onclick="processarPlanilhaUnica()" disabled>➕ Somar G + AT</button>
+      </div>
+
+      <div id="statusSection2" class="status-section"><div id="statusMessage2"></div></div>
+      <div id="errorDetails2" class="error-details">
+        <h4>📋 Detalhes da Verificação</h4>
+        <div id="errorList2" class="error-list"></div>
+      </div>
+      <div id="loadingSection2" class="loading"><div class="spinner"></div><p>Processando planilha...</p></div>
+
+      <div id="resultsSection2" class="results-section">
+        <div class="results-header">
+          <h3>📊 Resultados (G + AT) agrupados</h3>
+          <div class="stats" id="statsContainer2"></div>
+        </div>
+        <div class="table-container">
+          <table class="results-table" id="resultsTable2">
+            <thead>
+              <tr>
+                <th>Prefixo (A)</th>
+                <th>Dependência (B)</th>
+                <th>Carteira (D)</th>
+                <th>Tipo Carteira (E)</th>
+                <th>Realizado (G + AT)</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody2"></tbody>
+          </table>
+        </div>
+        <div class="action-buttons">
+          <button class="btn btn-primary" onclick="copiarTabela2()">📋 Copiar Tabela</button>
+          <button class="btn btn-secondary" onclick="exportarExcel2()">📥 Exportar Excel</button>
+          <button class="btn btn-secondary" onclick="limparResultados2()">🗑️ Limpar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ====== Estado global ABA 1 (já existente) ======
+    let planilha1Data = null, planilha2Data = null;
+    let resultadosOriginais = [], errosEncontrados = [];
+
+    // ====== Estado global ABA 2 (NOVA) ======
+    let singleData = null;              // linhas lidas por letra (A,B,D,E,G,AT)
+    let resultadosSingle = [];          // agregados
+    let errosEncontrados2 = [];
+
+    // -------------------- TABS --------------------
+    function showTab(n){
+      const b1 = document.getElementById('tabBtn1');
+      const b2 = document.getElementById('tabBtn2');
+      const p1 = document.getElementById('tab1');
+      const p2 = document.getElementById('tab2');
+      if(n===1){
+        b1.classList.add('active'); b2.classList.remove('active');
+        p1.classList.add('active'); p2.classList.remove('active');
+      }else{
+        b2.classList.add('active'); b1.classList.remove('active');
+        p2.classList.add('active'); p1.classList.remove('active');
+      }
+    }
+
+    // ---------------- Drag & Drop (ambas as abas) ----------------
+    setupDragAndDrop();
+    function setupDragAndDrop(){
+      const boxes = document.querySelectorAll('.upload-box');
+      boxes.forEach(box=>{
+        box.addEventListener('dragover',e=>{e.preventDefault();box.classList.add('dragover')});
+        box.addEventListener('dragleave',e=>{e.preventDefault();box.classList.remove('dragover')});
+        box.addEventListener('drop',e=>{
+          e.preventDefault();box.classList.remove('dragover');
+          const files = e.dataTransfer.files;
+          if(!files || !files.length) return;
+          const input = box.querySelector('.file-input');
+          input.files = files;
+          // Decide para qual handler vai:
+          if(input.id==='fileSingle') handleFileSelectSingle(input);
+          else handleFileSelect(input, box.id);
+        });
+      });
+    }
+
+    // ==================== ABA 1 (duas planilhas G + R) ====================
+    document.getElementById('file1').addEventListener('change', e=>handleFileSelect(e.target,'uploadBox1'));
+    document.getElementById('file2').addEventListener('change', e=>handleFileSelect(e.target,'uploadBox2'));
+
+    function handleFileSelect(input, boxId){
+      const file = input.files[0];
+      const fileInfo = document.getElementById('fileInfo' + boxId.slice(-1));
+      if(file){
+        fileInfo.innerHTML = `<strong>📁 ${file.name}</strong><br>Tamanho: ${formatFileSize(file.size)}<br>Tipo: ${file.type || 'Excel'}`;
+        readExcelFile(file, parseInt(boxId.slice(-1)));
+      }else fileInfo.textContent = 'Nenhum arquivo selecionado';
+    }
+
+    function readExcelFile(file, planilhaNum){
+      showStatus('Lendo arquivo...','info');
+      const reader = new FileReader();
+      reader.onload = function(e){
+        try{
+          const data = new Uint8Array(e.target.result);
+          const wb = XLSX.read(data, { type:'array' });
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          const jsonData = buildMinimalJsonFromSheet(ws); // A,B,D,E,G,R
+          if(planilhaNum===1) planilha1Data = jsonData; else planilha2Data = jsonData;
+          showStatus(`Arquivo ${file.name} carregado com sucesso!`,'success');
+          updateButtonStates();
+        }catch(err){
+          showError(`Erro ao ler o arquivo ${file.name}: ${err.message}`);
+          if(planilhaNum===1) planilha1Data = null; else planilha2Data = null;
         }
+      };
+      reader.onerror = ()=>showError(`Erro ao carregar o arquivo ${file.name}`);
+      reader.readAsArrayBuffer(file);
+    }
 
-        document.getElementById('file1').addEventListener('change', (e) => handleFileSelect(e.target, 'uploadBox1'));
-        document.getElementById('file2').addEventListener('change', (e) => handleFileSelect(e.target, 'uploadBox2'));
+    function buildMinimalJsonFromSheet(ws){
+      const ref = ws['!ref']; if(!ref) return [];
+      const range = XLSX.utils.decode_range(ref);
+      const rows = [];
+      const dataStartRow = range.s.r + 2; // pula 2 linhas de cabeçalho (mesclagens inclusas)
 
-        function handleFileSelect(input, boxId) {
-            const file = input.files[0];
-            const fileInfo = document.getElementById('fileInfo' + boxId.slice(-1));
-            if (file) {
-                fileInfo.innerHTML = `<strong>📁 ${file.name}</strong><br>Tamanho: ${formatFileSize(file.size)}<br>Tipo: ${file.type || 'Excel'}`;
-                readExcelFile(file, parseInt(boxId.slice(-1)));
-            } else {
-                fileInfo.textContent = 'Nenhum arquivo selecionado';
-            }
+      for(let r=dataStartRow;r<=range.e.r;r++){
+        const A = getCell(ws,'A',r);
+        const B = getCell(ws,'B',r);
+        const D = getCell(ws,'D',r);
+        const E = getCell(ws,'E',r);
+        const G = getCell(ws,'G',r);
+        const R = getCell(ws,'R',r);
+
+        const hasAny = [A,B,D,E,G,R].some(v=>v!==null && v!==undefined && v!=='');
+        if(!hasAny) continue;
+
+        const arr = [];
+        arr[0]=A; arr[1]=B; arr[3]=D; arr[4]=E;
+        arr[6]=toNumberBR(G);   // G (Rlz.)
+        arr[17]=toNumberBR(R);  // R (D-0)
+        rows.push(arr);
+      }
+      return rows;
+    }
+
+    function verificarErros(){
+      errosEncontrados = [];
+      const box = document.getElementById('errorDetails');
+      const list = document.getElementById('errorList');
+      list.innerHTML=''; box.style.display='block';
+      let html = '<h4>📋 Resultado da Verificação</h4>';
+
+      if(!planilha1Data || !planilha2Data){
+        errosEncontrados.push('Ambas as planilhas devem ser carregadas');
+        html += '<p>❌ <strong>Erro:</strong> Uma ou ambas as planilhas não foram carregadas.</p>';
+      }else{
+        html += '<p>✅ <strong>Sucesso:</strong> Ambas as planilhas foram carregadas.</p>';
+        if(!planilha1Data.length){errosEncontrados.push('Planilha 1 vazia'); html+='<p>❌ Planilha 1 vazia.</p>'}
+        if(!planilha2Data.length){errosEncontrados.push('Planilha 2 vazia'); html+='<p>❌ Planilha 2 vazia.</p>'}
+
+        const p1ok = planilha1Data.some(r=>r && (r[6]!==undefined || r[17]!==undefined));
+        const p2ok = planilha2Data.some(r=>r && (r[6]!==undefined || r[17]!==undefined));
+        if(!p1ok){errosEncontrados.push('Planilha 1 sem G/R'); html+='<p>❌ Planilha 1 sem G/R.</p>'}
+        if(!p2ok){errosEncontrados.push('Planilha 2 sem G/R'); html+='<p>❌ Planilha 2 sem G/R.</p>'}
+      }
+
+      if(!errosEncontrados.length) html+='<p>✅ Conclusão: pronto para processar.</p>';
+      else html+='<p>❌ Conclusão: corrija os erros acima.</p>';
+
+      list.innerHTML = html;
+      showStatus('Verificação concluída!', errosEncontrados.length? 'error':'success');
+    }
+
+    function processarPlanilhas(){
+      if(errosEncontrados.length){ showError('Corrija os erros antes de processar.'); return; }
+      showLoading(true);
+      setTimeout(()=>{
+        try{
+          const resultado = processarDados();
+          resultadosOriginais = resultado;
+          exibirResultados(resultado);
+          showStatus('Processamento concluído!','success');
+        }catch(e){ showError(`Erro no processamento: ${e.message}`); }
+        finally{ showLoading(false); }
+      }, 60);
+    }
+
+    function processarDados(){
+      const mapa = new Map();
+      (planilha1Data||[]).forEach(row=>{
+        if(!row) return;
+        const a=row[0], b=row[1], d=row[3], e=row[4], g=toNumberBR(row[6]), r=toNumberBR(row[17]);
+        if(a!=null&&b!=null&&d!=null&&e!=null){
+          const k=`${a}|${b}|${d}|${e}`;
+          mapa.set(k,{a,b,d,e,g,r});
         }
-
-        // =========================================================
-        // FIX: Ler por LETRAS (A,B,D,E,G,R) ignorando cabeçalho mesclado
-        // =========================================================
-        function readExcelFile(file, planilhaNum) {
-            showStatus('Lendo arquivo...', 'info');
-            const reader = new FileReader();
-
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-
-                    // Monta um array "tipo header:1" só com os campos necessários,
-                    // mas puxando por letra, e começando 2 linhas após o topo.
-                    const jsonData = buildMinimalJsonFromSheet(worksheet); // FIX
-
-                    if (planilhaNum === 1) {
-                        planilha1Data = jsonData;
-                        file1Name = file.name;
-                    } else {
-                        planilha2Data = jsonData;
-                        file2Name = file.name;
-                    }
-
-                    showStatus(`Arquivo ${file.name} carregado com sucesso!`, 'success');
-                    updateButtonStates();
-
-                } catch (error) {
-                    showError(`Erro ao ler o arquivo ${file.name}: ${error.message}`);
-                    if (planilhaNum === 1) planilha1Data = null; else planilha2Data = null;
-                }
-            };
-
-            reader.onerror = function() { showError(`Erro ao carregar o arquivo ${file.name}`); };
-            reader.readAsArrayBuffer(file);
+      });
+      (planilha2Data||[]).forEach(row=>{
+        if(!row) return;
+        const a=row[0], b=row[1], d=row[3], e=row[4], g=toNumberBR(row[6]), r=toNumberBR(row[17]);
+        if(a!=null&&b!=null&&d!=null&&e!=null){
+          const k=`${a}|${b}|${d}|${e}`;
+          if(mapa.has(k)){const it=mapa.get(k); it.g+=g; it.r+=r;}
+          else mapa.set(k,{a,b,d,e,g,r});
         }
+      });
+      const out=[];
+      mapa.forEach(it=>out.push({...it,total:it.g+it.r}));
+      return out.sort((x,y)=> (Number(x.a)||0)-(Number(y.a)||0) || String(x.b).localeCompare(String(y.b)));
+    }
 
-        // FIX: Constrói linhas [A,B,_,D,E,_,G, ... , R na posição 17] lendo por letras
-        function buildMinimalJsonFromSheet(ws) {
-            const ref = ws['!ref'];
-            if (!ref) return [];
-            const range = XLSX.utils.decode_range(ref);
+    function exibirResultados(lista){
+      const tbody=document.getElementById('resultsBody');
+      const stats=document.getElementById('statsContainer');
+      const sec=document.getElementById('resultsSection');
+      tbody.innerHTML='';
+      let n=lista.length, sumG=0,sumR=0,sumTotal=0;
+      lista.forEach(it=>{
+        const tr=tbody.insertRow();
+        tr.innerHTML = `
+          <td>${it.a??''}</td>
+          <td>${it.b??''}</td>
+          <td>${it.d??''}</td>
+          <td>${it.e??''}</td>
+          <td>${formatNumber(it.g)}</td>
+          <td>${formatNumber(it.r)}</td>
+          <td><strong>${formatNumber(it.total)}</strong></td>`;
+        sumG+=it.g; sumR+=it.r; sumTotal+=it.total;
+      });
+      stats.innerHTML = `
+        <div class="stat-card"><div class="stat-number">${n}</div><div class="stat-label">Registros</div></div>
+        <div class="stat-card"><div class="stat-number">${formatNumber(sumG)}</div><div class="stat-label">Total G</div></div>
+        <div class="stat-card"><div class="stat-number">${formatNumber(sumR)}</div><div class="stat-label">Total R</div></div>
+        <div class="stat-card"><div class="stat-number">${formatNumber(sumTotal)}</div><div class="stat-label">Total Geral</div></div>`;
+      sec.style.display='block';
+    }
 
-            const rows = [];
-            const dataStartRow = range.s.r + 2; // pula 2 linhas de cabeçalho, como antes
+    function copiarTabela(){
+      const table=document.getElementById('resultsTable');
+      copyTableToClipboard(table);
+      showStatus('Tabela copiada!','success');
+    }
+    function exportarExcel(){
+      if(!resultadosOriginais.length){showError('Sem resultados.');return;}
+      const ws_data=[['Prefixo (A)','Dependência (B)','Carteira (D)','Tipo Carteira (E)','Coluna G (Rlz.)','Coluna R (D-0)','Total Soma']];
+      resultadosOriginais.forEach(it=>ws_data.push([it.a,it.b,it.d,it.e,it.g,it.r,it.total]));
+      const ws=XLSX.utils.aoa_to_sheet(ws_data);
+      const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Resultados_G+R');
+      XLSX.writeFile(wb, `resultado_G_R_${dateStamp()}.xlsx`);
+      showStatus('Excel exportado!','success');
+    }
+    function limparResultados(){
+      document.getElementById('resultsSection').style.display='none';
+      document.getElementById('errorDetails').style.display='none';
+      resultadosOriginais=[]; errosEncontrados=[];
+      showStatus('Resultados limpos.','info');
+    }
+    function updateButtonStates(){
+      const ok = !!(planilha1Data && planilha2Data);
+      document.getElementById('verifyBtn').disabled = !ok;
+      document.getElementById('processBtn').disabled = !ok;
+    }
 
-            for (let r = dataStartRow; r <= range.e.r; r++) {
-                const A = getCell(ws, 'A', r);
-                const B = getCell(ws, 'B', r);
-                const D = getCell(ws, 'D', r);
-                const E = getCell(ws, 'E', r);
-                const G = getCell(ws, 'G', r);
-                const R = getCell(ws, 'R', r);
+    // ==================== ABA 2 (Planilha única G + AT) ====================
+    document.getElementById('fileSingle').addEventListener('change', e=>handleFileSelectSingle(e.target));
 
-                const hasAny =
-                    (A !== null && A !== undefined && A !== '') ||
-                    (B !== null && B !== undefined && B !== '') ||
-                    (D !== null && D !== undefined && D !== '') ||
-                    (E !== null && E !== undefined && E !== '') ||
-                    (G !== null && G !== undefined && G !== '') ||
-                    (R !== null && R !== undefined && R !== '');
+    function handleFileSelectSingle(input){
+      const file = input.files[0];
+      const info = document.getElementById('fileInfoSingle');
+      if(file){
+        info.innerHTML = `<strong>📁 ${file.name}</strong><br>Tamanho: ${formatFileSize(file.size)}<br>Tipo: ${file.type || 'Excel'}`;
+        readExcelFileSingle(file);
+      }else info.textContent='Nenhum arquivo selecionado';
+    }
 
-                if (!hasAny) continue; // linha vazia
+    function readExcelFileSingle(file){
+      showStatus2('Lendo arquivo...','info');
+      const reader = new FileReader();
+      reader.onload = function(e){
+        try{
+          const data = new Uint8Array(e.target.result);
+          const wb = XLSX.read(data,{type:'array'});
+          const ws = wb.Sheets[wb.SheetNames[0]];
 
-                // Monta no formato de array compatível com o processador atual
-                const arr = [];
-                arr[0] = A;          // A
-                arr[1] = B;          // B
-                arr[3] = D;          // D
-                arr[4] = E;          // E
-                arr[6] = toNumberBR(G); // G (Rlz.)
-                arr[17] = toNumberBR(R); // R (D-0)
-
-                rows.push(arr);
-            }
-            return rows;
+          // ABA 2: A, B, D, E, G, AT (AT = 46ª coluna)
+          singleData = buildJsonSingle(ws);
+          showStatus2(`Arquivo ${file.name} carregado!`,'success');
+          updateButtonStates2();
+        }catch(err){
+          singleData = null;
+          showError2(`Erro ao ler: ${err.message}`);
         }
+      };
+      reader.onerror = ()=>showError2(`Erro ao carregar o arquivo ${file.name}`);
+      reader.readAsArrayBuffer(file);
+    }
 
-        // FIX: leitura célula por letra + linha (0-based row index vindo do decode_range)
-        function getCell(ws, colLetter, r0based) {
-            const addr = XLSX.utils.encode_cell({ c: XLSX.utils.decode_col(colLetter), r: r0based });
-            const cell = ws[addr];
-            return cell ? cell.v : null;
-        }
+    // Lê por letra, ignorando cabeçalho mesclado (pula 2 linhas), incluindo AT
+    function buildJsonSingle(ws){
+      const ref = ws['!ref']; if(!ref) return [];
+      const range = XLSX.utils.decode_range(ref);
+      const rows = [];
+      const dataStartRow = range.s.r + 2;
 
-        // FIX: Converte strings "pt-BR" para número (ex.: "1.234,56" -> 1234.56)
-        function toNumberBR(val) {
-            if (val === null || val === undefined || val === '') return 0;
-            if (typeof val === 'number') return val;
-            if (typeof val !== 'string') return Number(val) || 0;
+      for(let r=dataStartRow;r<=range.e.r;r++){
+        const A  = getCell(ws,'A',r);
+        const B  = getCell(ws,'B',r);
+        const D  = getCell(ws,'D',r);
+        const E  = getCell(ws,'E',r);
+        const G  = getCell(ws,'G',r);
+        const AT = getCell(ws,'AT',r); // << ABA 2
 
-            // remove espaços
-            let s = val.trim();
-            // se contiver milhares e decimais no padrão BR
-            if (/^\d{1,3}(\.\d{3})*,\d{1,}$/.test(s) || /^\d{1,3}(\.\d{3})+$/.test(s) || /^\d+,\d+$/.test(s)) {
-                s = s.replace(/\./g, '').replace(',', '.');
-                const n = Number(s);
-                return isNaN(n) ? 0 : n;
-            }
-            // tenta parse direto
-            const n = Number(s);
-            return isNaN(n) ? 0 : n;
-        }
-        // =========================================================
+        const hasAny = [A,B,D,E,G,AT].some(v=>v!==null && v!==undefined && v!=='');
+        if(!hasAny) continue;
 
-        function verificarErros() {
-            errosEncontrados = [];
-            const errorDetails = document.getElementById('errorDetails');
-            const errorList = document.getElementById('errorList');
+        rows.push({
+          a:A, b:B, d:D, e:E,
+          g: toNumberBR(G),
+          at: toNumberBR(AT),
+        });
+      }
+      return rows;
+    }
 
-            errorList.innerHTML = '';
-            errorDetails.style.display = 'block';
+    function verificarErrosSingle(){
+      errosEncontrados2 = [];
+      const box = document.getElementById('errorDetails2');
+      const list = document.getElementById('errorList2');
+      list.innerHTML=''; box.style.display='block';
+      let html = '<h4>📋 Resultado da Verificação</h4>';
 
-            let infoText = '<h4>📋 Resultado da Verificação</h4>';
+      if(!singleData){
+        errosEncontrados2.push('Carregue a planilha única.');
+        html += '<p>❌ Nenhuma planilha carregada.</p>';
+      }else if(!singleData.length){
+        errosEncontrados2.push('Planilha vazia.');
+        html += '<p>❌ A planilha não contém dados.</p>';
+      }else{
+        const temG = singleData.some(r=>typeof r.g==='number');
+        const temAT = singleData.some(r=>typeof r.at==='number');
+        if(!temG)  {errosEncontrados2.push('Sem valores na coluna G');  html+='<p>❌ Sem G.</p>'}
+        if(!temAT) {errosEncontrados2.push('Sem valores na coluna AT'); html+='<p>❌ Sem AT.</p>'}
+        if(!errosEncontrados2.length) html += '<p>✅ Dados prontos para processamento.</p>';
+      }
 
-            if (!planilha1Data || !planilha2Data) {
-                errosEncontrados.push('Ambas as planilhas devem ser carregadas');
-                infoText += '<p>❌ <strong>Erro:</strong> Uma ou ambas as planilhas não foram carregadas.</p>';
-            } else {
-                infoText += '<p>✅ <strong>Sucesso:</strong> Ambas as planilhas foram carregadas.</p>';
+      list.innerHTML=html;
+      showStatus2('Verificação concluída!', errosEncontrados2.length? 'error':'success');
+    }
 
-                if (planilha1Data.length < 1) {
-                    errosEncontrados.push('Planilha 1 está vazia');
-                    infoText += '<p>❌ <strong>Erro:</strong> Planilha 1 não contém dados.</p>';
-                }
-                if (planilha2Data.length < 1) {
-                    errosEncontrados.push('Planilha 2 está vazia');
-                    infoText += '<p>❌ <strong>Erro:</strong> Planilha 2 não contém dados.</p>';
-                }
+    function processarPlanilhaUnica(){
+      if(errosEncontrados2.length){ showError2('Corrija os erros antes de processar.'); return; }
+      showLoading2(true);
+      setTimeout(()=>{
+        try{
+          // Agregar por A|B|D|E somando (G + AT)
+          const mapa = new Map();
+          (singleData||[]).forEach(row=>{
+            const a=row.a, b=row.b, d=row.d, e=row.e;
+            if(a==null||b==null||d==null||e==null) return;
+            const soma = toNumberBR(row.g) + toNumberBR(row.at);
+            const k = `${a}|${b}|${d}|${e}`;
+            if(mapa.has(k)) mapa.get(k).rlz += soma;
+            else mapa.set(k, {a,b,d,e, rlz:soma});
+          });
 
-                // Checagem mínima: garantir que preenchamos ao menos G(6) e R(17)
-                const p1TemColunas = planilha1Data.some(row => row && (row[6] !== undefined || row[17] !== undefined));
-                const p2TemColunas = planilha2Data.some(row => row && (row[6] !== undefined || row[17] !== undefined));
+          resultadosSingle = Array.from(mapa.values())
+            .sort((x,y)=> (Number(x.a)||0)-(Number(y.a)||0) || String(x.b).localeCompare(String(y.b)));
 
-                if (!p1TemColunas) {
-                    errosEncontrados.push('Planilha 1 sem valores nas colunas G ou R');
-                    infoText += '<p>❌ <strong>Erro:</strong> Planilha 1 sem valores em G/R.</p>';
-                }
-                if (!p2TemColunas) {
-                    errosEncontrados.push('Planilha 2 sem valores nas colunas G ou R');
-                    infoText += '<p>❌ <strong>Erro:</strong> Planilha 2 sem valores em G/R.</p>';
-                }
+          exibirResultadosSingle(resultadosSingle);
+          showStatus2('Processamento concluído!','success');
+        }catch(e){ showError2(`Erro no processamento: ${e.message}`); }
+        finally{ showLoading2(false); }
+      },60);
+    }
 
-                if (planilha1Data.length > 0) {
-                    const dadosG1 = planilha1Data.filter(row => row && row[6] != null && row[6] !== '').length;
-                    const dadosR1 = planilha1Data.filter(row => row && row[17] != null && row[17] !== '').length;
-                    infoText += `<p>📊 <strong>Planilha 1:</strong> ${dadosG1} registros na Coluna G, ${dadosR1} registros na Coluna R</p>`;
-                }
-                if (planilha2Data.length > 0) {
-                    const dadosG2 = planilha2Data.filter(row => row && row[6] != null && row[6] !== '').length;
-                    const dadosR2 = planilha2Data.filter(row => row && row[17] != null && row[17] !== '').length;
-                    infoText += `<p>📊 <strong>Planilha 2:</strong> ${dadosG2} registros na Coluna G, ${dadosR2} registros na Coluna R</p>`;
-                }
-            }
+    function exibirResultadosSingle(lista){
+      const tbody=document.getElementById('resultsBody2');
+      const stats=document.getElementById('statsContainer2');
+      const sec=document.getElementById('resultsSection2');
+      tbody.innerHTML='';
 
-            if (errosEncontrados.length === 0) {
-                infoText += '<p>✅ <strong>Conclusão:</strong> Nenhum erro encontrado! As planilhas estão prontas para processamento.</p>';
-            } else {
-                infoText += '<p>❌ <strong>Conclusão:</strong> foram encontrados erros que impedem o processamento.</p><ul>';
-                errosEncontrados.forEach(erro => { infoText += `<li>${erro}</li>`; });
-                infoText += '</ul>';
-            }
+      let n=lista.length, total=0;
+      lista.forEach(it=>{
+        const tr=tbody.insertRow();
+        tr.innerHTML = `
+          <td>${it.a??''}</td>
+          <td>${it.b??''}</td>
+          <td>${it.d??''}</td>
+          <td>${it.e??''}</td>
+          <td><strong>${formatNumber(it.rlz)}</strong></td>`;
+        total += it.rlz;
+      });
 
-            errorList.innerHTML = infoText;
-            showStatus('Verificação concluída!', errosEncontrados.length === 0 ? 'success' : 'error');
-        }
+      stats.innerHTML = `
+        <div class="stat-card"><div class="stat-number">${n}</div><div class="stat-label">Registros</div></div>
+        <div class="stat-card"><div class="stat-number">${formatNumber(total)}</div><div class="stat-label">Total Realizado (G+AT)</div></div>`;
+      sec.style.display='block';
+    }
 
-        function processarPlanilhas() {
-            if (errosEncontrados.length > 0) {
-                showError('Corrija os erros antes de processar as planilhas.');
-                return;
-            }
-            showLoading(true);
-            setTimeout(() => {
-                try {
-                    const resultado = processarDados();
-                    resultadosOriginais = resultado;
-                    exibirResultados(resultado);
-                    showStatus('Processamento concluído com sucesso!', 'success');
-                } catch (error) {
-                    showError(`Erro durante o processamento: ${error.message}`);
-                } finally {
-                    showLoading(false);
-                }
-            }, 100);
-        }
+    function copiarTabela2(){
+      const table=document.getElementById('resultsTable2');
+      copyTableToClipboard(table);
+      showStatus2('Tabela copiada!','success');
+    }
+    function exportarExcel2(){
+      if(!resultadosSingle.length){showError2('Sem resultados.');return;}
+      const ws_data=[['Prefixo (A)','Dependência (B)','Carteira (D)','Tipo Carteira (E)','Realizado (G+AT)']];
+      resultadosSingle.forEach(it=>ws_data.push([it.a,it.b,it.d,it.e,it.rlz]));
+      const ws=XLSX.utils.aoa_to_sheet(ws_data);
+      const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Resultados_G+AT');
+      XLSX.writeFile(wb, `resultado_G_AT_${dateStamp()}.xlsx`);
+      showStatus2('Excel exportado!','success');
+    }
+    function limparResultados2(){
+      document.getElementById('resultsSection2').style.display='none';
+      document.getElementById('errorDetails2').style.display='none';
+      resultadosSingle=[]; errosEncontrados2=[];
+      showStatus2('Resultados limpos.','info');
+    }
+    function updateButtonStates2(){
+      const ok = !!singleData;
+      document.getElementById('verifySingleBtn').disabled = !ok;
+      document.getElementById('processSingleBtn').disabled = !ok;
+    }
 
-        function processarDados() {
-            const resultado = [];
-            const dadosProcessados = new Map();
+    // ---------------- Utilitários compartilhados ----------------
+    function getCell(ws, colLetter, r0){ // r0 é 0-based (do decode_range)
+      const addr = XLSX.utils.encode_cell({ c: XLSX.utils.decode_col(colLetter), r: r0 });
+      const cell = ws[addr];
+      return cell ? cell.v : null;
+    }
+    function toNumberBR(val){
+      if(val===null||val===undefined||val==='') return 0;
+      if(typeof val==='number') return val;
+      if(typeof val!=='string'){ const n=Number(val); return isNaN(n)?0:n; }
+      let s = val.trim();
+      if(/^\d{1,3}(\.\d{3})*,\d{1,}$/.test(s) || /^\d{1,3}(\.\d{3})+$/.test(s) || /^\d+,\d+$/.test(s)){
+        s = s.replace(/\./g,'').replace(',', '.');
+        const n=Number(s); return isNaN(n)?0:n;
+      }
+      const n=Number(s); return isNaN(n)?0:n;
+    }
+    function formatNumber(n){
+      if(n===null||n===undefined||isNaN(n)) return '0,00';
+      return new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+    }
+    function copyTableToClipboard(table){
+      const rows = table.querySelectorAll('tr');
+      let clip = '';
+      rows.forEach(row=>{
+        const cells = row.querySelectorAll('th,td');
+        clip += Array.from(cells).map(c=>c.textContent).join('\t')+'\n';
+      });
+      navigator.clipboard.writeText(clip).catch(()=>{});
+    }
+    function formatFileSize(bytes){
+      if(!bytes) return '0 Bytes';
+      const k=1024, sizes=['Bytes','KB','MB','GB'], i=Math.floor(Math.log(bytes)/Math.log(k));
+      return parseFloat((bytes/Math.pow(k,i)).toFixed(2))+' '+sizes[i];
+    }
+    function dateStamp(){ return new Date().toISOString().slice(0,10); }
 
-            // Planilha 1
-            planilha1Data.forEach((row) => {
-                if (row) {
-                    const a = row[0]; // A
-                    const b = row[1]; // B
-                    const d = row[3]; // D
-                    const e = row[4]; // E
-                    const g = toNumberBR(row[6]);   // G (Rlz.)
-                    const r = toNumberBR(row[17]);  // R (D-0)
+    // status ABA 1
+    function showStatus(msg,type){
+      const sec=document.getElementById('statusSection'); const el=document.getElementById('statusMessage');
+      sec.className = `status-section status-${type}`; el.innerHTML=msg; sec.style.display='block';
+      if(type==='success') setTimeout(()=>sec.style.display='none', 3000);
+    }
+    function showError(m){ showStatus('❌ '+m,'error'); }
+    function showLoading(on){ document.getElementById('loadingSection').style.display=on?'block':'none'; }
 
-                    if (a != null && b != null && d != null && e != null) {
-                        const chave = `${a}|${b}|${d}|${e}`;
-                        dadosProcessados.set(chave, { a, b, d, e, g, r });
-                    }
-                }
-            });
-
-            // Planilha 2 (somar)
-            planilha2Data.forEach((row) => {
-                if (row) {
-                    const a = row[0];
-                    const b = row[1];
-                    const d = row[3];
-                    const e = row[4];
-                    const g = toNumberBR(row[6]);
-                    const r = toNumberBR(row[17]);
-
-                    if (a != null && b != null && d != null && e != null) {
-                        const chave = `${a}|${b}|${d}|${e}`;
-                        if (dadosProcessados.has(chave)) {
-                            const item = dadosProcessados.get(chave);
-                            item.g += g;
-                            item.r += r;
-                        } else {
-                            dadosProcessados.set(chave, { a, b, d, e, g, r });
-                        }
-                    }
-                }
-            });
-
-            dadosProcessados.forEach(item => {
-                resultado.push({ ...item, total: item.g + item.r });
-            });
-
-            return resultado.sort((a, b) => {
-                if (a.a !== b.a) return (Number(a.a) || 0) - (Number(b.a) || 0);
-                return String(a.b).localeCompare(String(b.b));
-            });
-        }
-
-        function exibirResultados(resultado) {
-            const tbody = document.getElementById('resultsBody');
-            const statsContainer = document.getElementById('statsContainer');
-            const resultsSection = document.getElementById('resultsSection');
-
-            tbody.innerHTML = '';
-
-            let totalRegistros = resultado.length;
-            let totalG = 0;
-            let totalR = 0;
-            let totalGeral = 0;
-
-            resultado.forEach(item => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${item.a || ''}</td>
-                    <td>${item.b || ''}</td>
-                    <td>${item.d || ''}</td>
-                    <td>${item.e || ''}</td>
-                    <td>${formatNumber(item.g)}</td>
-                    <td>${formatNumber(item.r)}</td>
-                    <td><strong>${formatNumber(item.total)}</strong></td>
-                `;
-                totalG += item.g;
-                totalR += item.r;
-                totalGeral += item.total;
-            });
-
-            statsContainer.innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-number">${totalRegistros}</div>
-                    <div class="stat-label">Registros Processados</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${formatNumber(totalG)}</div>
-                    <div class="stat-label">Total Coluna G</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${formatNumber(totalR)}</div>
-                    <div class="stat-label">Total Coluna R</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${formatNumber(totalGeral)}</div>
-                    <div class="stat-label">Total Geral</div>
-                </div>
-            `;
-            resultsSection.style.display = 'block';
-        }
-
-        function copiarTabela() {
-            const table = document.getElementById('resultsTable');
-            const rows = table.querySelectorAll('tr');
-            let clipboardData = '';
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('td, th');
-                const rowData = Array.from(cells).map(cell => cell.textContent).join('\t');
-                clipboardData += rowData + '\n';
-            });
-            navigator.clipboard.writeText(clipboardData)
-                .then(() => showStatus('Tabela copiada para a área de transferência!', 'success'))
-                .catch(() => showError('Erro ao copiar tabela. Tente novamente.'));
-        }
-
-        function exportarExcel() {
-            if (resultadosOriginais.length === 0) {
-                showError('Nenhum resultado para exportar.');
-                return;
-            }
-            try {
-                const ws_data = [['Prefixo (A)', 'Dependência (B)', 'Carteira (D)', 'Tipo Carteira (E)', 'Coluna G (Rlz.)', 'Coluna R (D-0)', 'Total Soma']];
-                resultadosOriginais.forEach(item => {
-                    ws_data.push([item.a, item.b, item.d, item.e, item.g, item.r, item.total]);
-                });
-                const ws = XLSX.utils.aoa_to_sheet(ws_data);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, 'Resultados');
-                const fileName = `resultado_soma_${new Date().toISOString().split('T')[0]}.xlsx`;
-                XLSX.writeFile(wb, fileName);
-                showStatus('Arquivo Excel exportado com sucesso!', 'success');
-            } catch (error) {
-                showError(`Erro ao exportar: ${error.message}`);
-            }
-        }
-
-        function limparResultados() {
-            document.getElementById('resultsSection').style.display = 'none';
-            document.getElementById('errorDetails').style.display = 'none';
-            resultadosOriginais = [];
-            errosEncontrados = [];
-            showStatus('Resultados limpos.', 'info');
-        }
-
-        function updateButtonStates() {
-            const bothFilesLoaded = planilha1Data && planilha2Data;
-            document.getElementById('verifyBtn').disabled = !bothFilesLoaded;
-            document.getElementById('processBtn').disabled = !bothFilesLoaded;
-        }
-
-        function showStatus(message, type) {
-            const statusSection = document.getElementById('statusSection');
-            const statusMessage = document.getElementById('statusMessage');
-            statusSection.className = `status-section status-${type}`;
-            statusMessage.innerHTML = message;
-            statusSection.style.display = 'block';
-            if (type === 'success') {
-                setTimeout(() => { statusSection.style.display = 'none'; }, 3000);
-            }
-        }
-
-        function showError(message) { showStatus(`❌ ${message}`, 'error'); }
-
-        function showLoading(show) {
-            const loadingSection = document.getElementById('loadingSection');
-            loadingSection.style.display = show ? 'block' : 'none';
-        }
-
-        function formatNumber(num) {
-            if (num === null || num === undefined || isNaN(num)) return '0,00';
-            return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-    </script>
+    // status ABA 2
+    function showStatus2(msg,type){
+      const sec=document.getElementById('statusSection2'); const el=document.getElementById('statusMessage2');
+      sec.className = `status-section status-${type}`; el.innerHTML=msg; sec.style.display='block';
+      if(type==='success') setTimeout(()=>sec.style.display='none', 3000);
+    }
+    function showError2(m){ showStatus2('❌ '+m,'error'); }
+    function showLoading2(on){ document.getElementById('loadingSection2').style.display=on?'block':'none'; }
+  </script>
 </body>
 </html>
