@@ -418,7 +418,7 @@
     <div class="container">
         <div class="header">
             <h1>Somador de Planilhas</h1>
-            <p>Ferramenta para somar valores realizados (Coluna G: Rlz., Coluna R: D-0, Coluna S: % Evolução Taxa Média) das planilhas</p>
+            <p>Ferramenta para somar valores realizados (Coluna G: Rlz., Coluna R: D-0, Coluna S: D-0 Coban) das planilhas</p>
         </div>
 
         <div class="main-content">
@@ -445,7 +445,7 @@
             <div class="options-section">
                 <h3>⚙️ Opções de Soma</h3>
                 <div class="warning-tooltip">
-                    ⚠️ <strong>Alerta:</strong> Suas planilhas contêm 31 valores negativos na Coluna S (% Evolução Taxa Média, mínimo: -31,48). Eles são cálculos normais (variações percentuais).
+                    ℹ️ <strong>Info:</strong> As colunas G (Rlz.), R (D-0) e S (D-0 Coban) não contêm valores negativos.
                 </div>
                 <div class="info-tooltip">
                     💡 <strong>Dica:</strong> Use "Verificar Erros" para analisar as planilhas antes do processamento.
@@ -716,7 +716,7 @@
                     if (row && row.length >= 27) {
                         const g = parseFloat(row[6]) || 0;
                         const r = parseFloat(row[17]) || 0;
-                        const s = parseFloat(row[26]) || 0;
+                        const s = parseFloat(row[18]) || 0; // Coluna S (D-0 Coban)
                         if (g < 0 || r < 0 || s < 0) countNegativos1++;
                     }
                 });
@@ -725,7 +725,7 @@
                     if (row && row.length >= 27) {
                         const g = parseFloat(row[6]) || 0;
                         const r = parseFloat(row[17]) || 0;
-                        const s = parseFloat(row[26]) || 0;
+                        const s = parseFloat(row[18]) || 0; // Coluna S (D-0 Coban)
                         if (g < 0 || r < 0 || s < 0) countNegativos2++;
                     }
                 });
@@ -882,7 +882,7 @@
                     const e = row[4]; // Coluna E
                     const g = tratarNegativo(parseFloat(row[6]) || 0);  // Coluna G (Rlz.)
                     const r = tratarNegativo(parseFloat(row[17]) || 0); // Coluna R (D-0)
-                    const s = tratarNegativo(parseFloat(row[26]) || 0); // Coluna S (% Evolução Taxa Média)
+                    const s = tratarNegativo(parseFloat(row[18]) || 0); // Coluna S (D-0 Coban)
                     
                     // Verificar se os dados de identificação não são nulos
                     if (a !== null && a !== undefined && b !== null && b !== undefined && 
@@ -912,7 +912,7 @@
                     const e = row[4]; // Coluna E
                     const g = tratarNegativo(parseFloat(row[6]) || 0);  // Coluna G (Rlz.)
                     const r = tratarNegativo(parseFloat(row[17]) || 0); // Coluna R (D-0)
-                    const s = tratarNegativo(parseFloat(row[26]) || 0); // Coluna S (% Evolução Taxa Média)
+                    const s = tratarNegativo(parseFloat(row[18]) || 0); // Coluna S (D-0 Coban)
                     
                     // Verificar se os dados de identificação não são nulos
                     if (a !== null && a !== undefined && b !== null && b !== undefined && 
