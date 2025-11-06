@@ -1,587 +1,1063 @@
-<!doctype html>
-<html lang="pt-br">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <title>Somar “Realizado” quando A, B, D e E coincidem — GitHub v1.4.1</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Somador de Planilhas - Soma de Valores Realizados</title>
+    <script src="./xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  <!-- SheetJS local (na MESMA pasta do index.html) -->
-  ./xlsx.full.min.js</script>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-  <style>
-    :root{
-      --bg:#0f172a; --panel:#111827; --card:#0b1220; --text:#e5e7eb; --muted:#9ca3af;
-      --accent:#22c55e; --accent-2:#3b82f6; --danger:#ef4444; --border:#1f2937;
-      --shadow:0 10px 30px rgba(0,0,0,.35); --radius:14px;
-      --warn:#f59e0b; --warn-bg:rgba(245,158,11,.12); --warn-bd:rgba(245,158,11,.35); --warn-tx:#fde68a;
-      --err:#ef4444;  --err-bg:rgba(239,68,68,.12);  --err-bd:rgba(239,68,68,.35);  --err-tx:#fecaca;
-      --ok:#22c55e;   --ok-bg:rgba(34,197,94,.12);   --ok-bd:rgba(34,197,94,.35);   --ok-tx:#86efac;
-      --info:#3b82f6; --info-bg:rgba(59,130,246,.12);--info-bd:rgba(59,130,246,.35); --info-tx:#bfdbfe;
-    }
-    html,body{height:100%}
-    body{
-      margin:0;
-      background: radial-gradient(1200px 800px at 10% 10%, #0b1220 0%, var(--bg) 60%),
-                  linear-gradient(180deg, #0a0f1d, var(--bg));
-      color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
-    }
-    .wrap{max-width:1200px; margin:40px auto; padding:0 20px;}
-    .hero{display:grid; gap:14px; margin-bottom:22px;}
-    .hero h1{font-size: clamp(20px, 3vw, 28px); margin:0; letter-spacing:.2px}
-    .hero p{margin:0; color:var(--muted)}
-    .panel{
-      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.005));
-      border:1px solid var(--border); border-radius: var(--radius);
-      box-shadow: var(--shadow); padding:18px;
-    }
-    .grid{display:grid; gap:16px}
-    @media(min-width:1024px){ .grid{ grid-template-columns: 1fr 1fr; } }
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
-      border:1px solid var(--border); border-radius:12px; padding:16px;
-    }
-    .label{font-size:13px; color:var(--muted); margin-bottom:8px}
-    .file{
-      display:flex; gap:10px; align-items:center; border:1px dashed #2a364a; padding:14px;
-      border-radius:10px; background: rgba(255,255,255,.02)
-    }
-    input[type="file"]{color:var(--muted)}
-    .actions{ display:flex; flex-wrap:wrap; gap:10px; margin-top:8px }
-    .btn{
-      appearance:none; border:1px solid var(--border); color:#fff; background: linear-gradient(180deg, #1f2937, #111827);
-      padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:600; letter-spacing:.2px;
-      transition: all .15s ease-in-out; box-shadow: 0 2px 0 rgba(0,0,0,.25);
-    }
-    .btn:hover{ transform: translateY(-1px); border-color:#334155 }
-    .btn:active{ transform: translateY(0) scale(.997) }
-    .btn.primary{ background: linear-gradient(180deg, #16a34a, #15803d); border-color:#14532d }
-    .btn.blue{ background: linear-gradient(180deg, #2563eb, #1d4ed8); border-color:#1e40af }
-    .btn.red{ background: linear-gradient(180deg, #ef4444, #dc2626); border-color:#b91c1c }
-    .hint{font-size:12px; color:var(--muted)}
-    .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
-    .selectlike{ background:#0b1220; border:1px solid var(--border); border-radius:10px; padding:6px 10px; color:#e5e7eb; }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
 
-    .kpi{display:flex; gap:16px; flex-wrap:wrap; margin-top:8px}
-    .tag{
-      display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px;
-      background: var(--ok-bg); border:1px solid var(--ok-bd); color:var(--ok-tx); font-size:12px; font-weight:700;
-    }
-    .tag.blue{ background:var(--info-bg); border-color:var(--info-bd); color:var(--info-tx) }
-    .tag.warn{ background:var(--warn-bg); border-color:var(--warn-bd); color:var(--warn-tx) }
-    .tag.err{  background:var(--err-bg);  border-color:var(--err-bd);  color:var(--err-tx) }
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
 
-    table{ width:100%; border-collapse: collapse; }
-    th, td{ border-bottom:1px solid var(--border); padding:10px 8px; text-align:left; font-size:14px }
-    th{ color:#a5b4fc; background: rgba(59,130,246,.06); position:sticky; top:0; z-index:1 }
-    .table-wrap{ max-height:55vh; overflow:auto; border:1px solid var(--border); border-radius:10px; }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
 
-    textarea{
-      width:100%; min-height:160px; resize:vertical; color:#e2e8f0; background:#0b1220;
-      border:1px solid var(--border); border-radius:10px; padding:10px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
 
-    /* Log */
-    .log-card{ background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)); border:1px solid var(--border); border-radius:12px; padding:16px; }
-    .log-toolbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px }
-    .log-toolbar .left{ display:flex; gap:10px; flex-wrap:wrap; align-items:center }
-    .log-stats{ display:flex; gap:8px; flex-wrap:wrap }
-    .log-box{
-      background:#0b1220; border:1px solid var(--border); border-radius:10px; padding:12px; min-height:160px; max-height:260px; overflow:auto;
-      font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace; font-size:12.5px; line-height:1.5;
-      white-space:pre-wrap; word-break:break-word;
-    }
-    .log-line{ padding:2px 0 }
-    .log-line.info{ color:#c7d2fe }
-    .log-line.warn{ color:#fde68a }
-    .log-line.error{ color:#fecaca }
-    .muted{ color:var(--muted); font-size:12px }
-  </style>
+        .info-tooltip {
+            background: #e1f5fe;
+            color: #01579b;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 3px solid #0288d1;
+            font-size: 0.9em;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .upload-box {
+            border: 3px dashed #ddd;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .upload-box:hover {
+            border-color: #4facfe;
+            background: #e3f2fd;
+        }
+
+        .upload-box.dragover {
+            border-color: #00f2fe;
+            background: #e0f7fa;
+            transform: scale(1.02);
+        }
+
+        .upload-box h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: transform 0.3s ease;
+            margin: 10px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .file-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e8f5e8;
+            border-radius: 5px;
+            color: #2e7d32;
+            display: none;
+        }
+
+        .options-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 5px solid #ff9800;
+        }
+
+        .options-section h3 {
+            color: #e65100;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .column-options {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .option-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .option-group input[type="radio"] {
+            margin: 0;
+        }
+
+        .verify-btn {
+            background: linear-gradient(135deg, #f57c00 0%, #ffb74d 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-left: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .verify-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 124, 0, 0.3);
+        }
+
+        .verify-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-details {
+            background: #fff3e0;
+            border: 1px solid #ffcc02;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .error-details h4 {
+            color: #e65100;
+            margin-bottom: 10px;
+        }
+
+        .error-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .error-list li {
+            background: white;
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 3px;
+            border-left: 3px solid #ff9800;
+        }
+
+        .process-btn {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            display: block;
+            margin: 20px auto;
+            transition: all 0.3s ease;
+        }
+
+        .process-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(86, 171, 47, 0.3);
+        }
+
+        .process-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .summary {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #2196f3;
+        }
+
+        .summary h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #1976d2;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .table-actions {
+            background: #f5f5f5;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .copy-btn, .export-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 5px;
+            font-size: 0.9em;
+            transition: background 0.3s ease;
+        }
+
+        .copy-btn:hover, .export-btn:hover {
+            background: #45a049;
+        }
+
+        .export-btn {
+            background: #2196f3;
+        }
+
+        .export-btn:hover {
+            background: #1976d2;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .number {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 5px solid #f44336;
+            margin: 15px 0;
+        }
+
+        @media (max-width: 768px) {
+            .upload-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="hero">
-      <h1>Somar “Realizado” quando <b>A, B, D e E</b> coincidem</h1>
-      <p>Carregue duas planilhas (mesmo cabeçalho). O app ignora cabeçalhos multi‑linha/mesclados e soma a coluna <b>Realizado</b>.</p>
+    <div class="container">
+        <div class="header">
+            <h1>Somador de Planilhas</h1>
+            <p>Ferramenta para somar valores realizados (colunas G, R, S) das planilhas</p>
+        </div>
+
+        <div class="main-content">
+            <div class="upload-section">
+                <div class="upload-box" id="uploadBox1">
+                    <h3>📊 Planilha 1</h3>
+                    <input type="file" id="file1" class="file-input" accept=".xlsx,.xls">
+                    <button class="upload-btn" onclick="document.getElementById('file1').click()">
+                        Selecionar Arquivo
+                    </button>
+                    <div class="file-info" id="fileInfo1"></div>
+                </div>
+
+                <div class="upload-box" id="uploadBox2">
+                    <h3>📈 Planilha 2</h3>
+                    <input type="file" id="file2" class="file-input" accept=".xlsx,.xls">
+                    <button class="upload-btn" onclick="document.getElementById('file2').click()">
+                        Selecionar Arquivo
+                    </button>
+                    <div class="file-info" id="fileInfo2"></div>
+                </div>
+            </div>
+
+            <div class="options-section">
+                <h3>⚙️ Opções de Soma</h3>
+                <div class="info-tooltip">
+                    💡 <strong>Dica:</strong> Use "Verificar Erros" para analisar as planilhas antes do processamento.
+                </div>
+                <div class="column-options">
+                    <div class="option-group">
+                        <input type="radio" id="optionGRS" name="somaOpcao" value="GRS" checked>
+                        <label for="optionGRS">Somar Colunas G + R + S</label>
+                    </div>
+                    <div class="option-group">
+                        <input type="radio" id="optionRS" name="somaOpcao" value="RS">
+                        <label for="optionRS">Somar apenas Colunas R + S</label>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="verify-btn" id="verifyBtn" onclick="verificarErros()" disabled>
+                    🔍 Verificar Erros
+                </button>
+                <button class="process-btn" id="processBtn" onclick="processarPlanilhas()" disabled>
+                    🔢 Processar e Somar Planilhas
+                </button>
+            </div>
+
+            <div class="error" id="errorMsg" style="display: none;"></div>
+
+            <div class="error-details" id="errorDetails">
+                <h4>🔍 Detalhes da Verificação</h4>
+                <ul class="error-list" id="errorList"></ul>
+            </div>
+
+            <div class="results-section" id="resultsSection">
+                <div class="summary" id="summarySection">
+                    <h3>📋 Resumo do Processamento</h3>
+                    <div class="summary-stats" id="summaryStats"></div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>🎯 Resultado da Soma por Identificação (A, B, D, E)</h3>
+                    </div>
+                    
+                    <div class="table-actions">
+                        <button class="copy-btn" onclick="copiarTabela()">📋 Copiar Tabela</button>
+                        <button class="export-btn" onclick="exportarExcel()">📊 Exportar Excel</button>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <div class="loading" id="loadingMsg">
+                            <div class="spinner"></div>
+                            <p>Processando dados...</p>
+                        </div>
+                        <table id="resultTable" style="display: none;">
+                            <thead>
+                                <tr>
+                                    <th>Prefixo (A)</th>
+                                    <th>Dependência (B)</th>
+                                    <th>Carteira (D)</th>
+                                    <th>Tipo Carteira (E)</th>
+                                    <th>Coluna G</th>
+                                    <th>Coluna R</th>
+                                    <th>Coluna S</th>
+                                    <th>Total Soma</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="panel grid">
-      <div class="card">
-        <div class="label">Planilha 1</div>
-        <div class="file"><input id="file1" type="file" accept=".xlsx,.xls,.csv" /></div>
-        <div class="hint">Usa a <b>primeira aba</b> do arquivo.</div>
-      </div>
+    <script>
+        let planilha1Data = null;
+        let planilha2Data = null;
+        let resultadoFinal = [];
 
-      <div class="card">
-        <div class="label">Planilha 2</div>
-        <div class="file"><input id="file2" type="file" accept=".xlsx,.xls,.csv" /></div>
-        <div class="hint">As duas planilhas devem ter o <b>mesmo esquema</b>.</div>
-      </div>
+        // Função para lidar com drag and drop
+        function setupDragAndDrop(uploadBox, fileInput, fileInfo, fileNum) {
+            uploadBox.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadBox.classList.add('dragover');
+            });
 
-      <div class="card">
-        <div class="label">Configurações</div>
-        <div class="row">
-          <span class="selectlike">Chaves: A + B + D + E</span>
-          <span class="selectlike">Somar: “Realizado” (auto, fallback = G)</span>
-        </div>
-        <div class="actions">
-          <button class="btn primary" id="runBtn">Processar Planilhas</button>
-          <button class="btn blue" id="dlCsvBtn" disabled>Baixar CSV</button>
-          <button class="btn" id="copyBtn" disabled>Copiar (TSV)</button>
-          <button class="btn red" id="clearBtn">Limpar</button>
-        </div>
-        <div class="kpi" id="kpi"></div>
-      </div>
+            uploadBox.addEventListener('dragleave', () => {
+                uploadBox.classList.remove('dragover');
+            });
 
-      <div class="card" style="grid-column:1/-1">
-        <div class="label">Resultado (Tabela)</div>
-        <div class="table-wrap">
-          <table id="outTable">
-            <thead>
-              <tr><th>Col A</th><th>Col B</th><th>Col D</th><th>Col E</th><th>Realizado (Σ)</th></tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="label" style="margin-top:14px">Resultado (TSV para copiar)</div>
-        <textarea id="outText" placeholder="Clique em Processar Planilhas para gerar o resultado."></textarea>
-        <div class="muted">TSV (tab) cola direto no Excel/Google Sheets.</div>
-      </div>
-
-      <!-- LOG -->
-      <div class="log-card" style="grid-column:1/-1">
-        <div class="log-toolbar">
-          <div class="left">
-            <strong>Log de processamento</strong>
-            <span class="muted">Mensagens detalhadas sobre leitura e validação.</span>
-          </div>
-          <div class="log-stats">
-            <span class="tag blue" id="logInfo">INFO: 0</span>
-            <span class="tag warn" id="logWarn">WARN: 0</span>
-            <span class="tag err"  id="logErr">ERROR: 0</span>
-            <button class="btn" id="copyLogBtn" title="Copiar todo o log">Copiar Log</button>
-            <button class="btn red" id="clearLogBtn" title="Limpar log">Limpar Log</button>
-          </div>
-        </div>
-        <div id="logBox" class="log-box" aria-live="polite"></div>
-      </div>
-    </div>
-  </div>
-
-<script>
-(function(){
-  // ==================
-  // Verificação SheetJS
-  // ==================
-  function hardFail(msg){
-    const logBox = document.getElementById('logBox');
-    const div = document.createElement('div');
-    div.className = 'log-line error';
-    div.textContent = `[${new Date().toLocaleString('pt-BR')}] ERROR: ${msg}`;
-    logBox.appendChild(div);
-    throw new Error(msg);
-  }
-  if (typeof XLSX === 'undefined'){
-    hardFail('Biblioteca XLSX não foi carregada. Verifique se o arquivo "xlsx.full.min.js" está na MESMA pasta do index.html e se a tag ./xlsx.full.min.js</script> está antes deste script.');
-  }
-
-  // ================
-  // Constantes / UI
-  // ================
-  const A=0, B=1, D=3, E=4; // chaves
-  const LOG_ROW_LIMIT_WARN = 50;
-
-  const $ = (sel)=>document.querySelector(sel);
-  const file1 = $('#file1'), file2 = $('#file2');
-  const btnRun=$('#runBtn'), btnCopy=$('#copyBtn'), btnCsv=$('#dlCsvBtn'), btnClear=$('#clearBtn');
-  const outTable=$('#outTable').querySelector('tbody'), outText=$('#outText'), kpi=$('#kpi');
-
-  // Log UI
-  const logBox = $('#logBox');
-  const logInfoBadge = $('#logInfo');
-  const logWarnBadge = $('#logWarn');
-  const logErrBadge  = $('#logErr');
-  const btnCopyLog = $('#copyLogBtn');
-  const btnClearLog = $('#clearLogBtn');
-
-  let lastRows = []; // resultado final
-  let counts = {info:0,warn:0,error:0};
-  let warnRowCount = 0;
-
-  // ==========
-  // Helpers
-  // ==========
-  const now = ()=> new Date().toLocaleString('pt-BR');
-  function addLog(level, msg){
-    counts[level]++; updateBadges();
-    const div = document.createElement('div');
-    div.className = `log-line ${level}`;
-    div.textContent = `[${now()}] ${level.toUpperCase()}: ${msg}`;
-    logBox.appendChild(div);
-    logBox.scrollTop = logBox.scrollHeight;
-  }
-  function logInfo(m){ addLog('info', m); }
-  function logWarn(m){ addLog('warn', m); }
-  function logError(m){ addLog('error', m); }
-
-  function updateBadges(){
-    logInfoBadge.textContent = `INFO: ${counts.info}`;
-    logWarnBadge.textContent = `WARN: ${counts.warn}`;
-    logErrBadge.textContent  = `ERROR: ${counts.error}`;
-  }
-  function clearLog(){ logBox.innerHTML=''; counts={info:0,warn:0,error:0}; warnRowCount=0; updateBadges(); }
-
-  btnCopyLog.addEventListener('click', async ()=>{
-    const text = Array.from(logBox.querySelectorAll('.log-line')).map(n=>n.textContent).join('\n');
-    if (navigator.clipboard){ await navigator.clipboard.writeText(text); }
-    else { const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
-    btnCopyLog.textContent='Copiado!'; setTimeout(()=>btnCopyLog.textContent='Copiar Log',1200);
-  });
-  btnClearLog.addEventListener('click', clearLog);
-
-  function parseNumber(v){
-    if (typeof v==='number') return isFinite(v)?v:0;
-    if (v===null || v===undefined) return 0;
-    let s = String(v).trim(); if (!s) return 0;
-    if (s.includes(',') && (!s.includes('.') || s.lastIndexOf(',')>s.lastIndexOf('.'))){ s=s.replace(/\./g,''); s=s.replace(/,/g,'.'); }
-    else { s=s.replace(/,/g,''); }
-    const n = parseFloat(s);
-    return isNaN(n)?NaN:n;
-  }
-  const norm = (t)=> String(t??'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
-
-  function readFirstSheetArrayBuffer(file){
-    return new Promise((resolve,reject)=>{
-      const reader = new FileReader();
-      reader.onload = () => {
-        try{
-          const data = new Uint8Array(reader.result);
-          const wb = XLSX.read(data, {type:'array', raw:false, cellDates:true});
-          const ws = wb.Sheets[wb.SheetNames[0]];
-          const aoa = XLSX.utils.sheet_to_json(ws, {header:1, defval:''}); // AOA
-          resolve(aoa);
-        }catch(e){ reject(e); }
-      };
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(file);
-    });
-  }
-
-  function detectRealizadoCol(aoa){
-    const MAX_ROWS = Math.min(aoa.length, 6);
-    let bestIdx = -1, bestScore=-1;
-    for (let r=0;r<MAX_ROWS;r++){
-      const row = aoa[r]||[];
-      for (let c=0;c<Math.min(row.length, 120);c++){
-        const s = norm(row[c]);
-        if (!s) continue;
-        let score = 0;
-        if (/\b(rlz|rlz\.|realizado|realizacao|realiz)\b/.test(s)) score += 3;
-        if (/acum|acumul|mes|media|taxa|%|orc|falta/.test(s)) score -= 1;
-        if (score>bestScore){ bestScore=score; bestIdx=c; }
-      }
-    }
-    return bestIdx>=0 ? bestIdx : 6; // fallback = G
-  }
-
-  function findDataStart(aoa, gIndex){
-    const MAX_SCAN = Math.min(aoa.length, 50);
-    for (let i=0;i<MAX_SCAN;i++){
-      const r = aoa[i]||[];
-      const keys = [r[0], r[1], r[3], r[4]].map(x=>String(x??'').trim());
-      const keysFilled = keys.some(x=>x!=='');
-      const g = parseNumber(r[gIndex]);
-      const gLooksNumber = !isNaN(g) && (String(r[gIndex]).trim()!=='' || g!==0);
-      const headerish = norm(r.join(' '));
-      const looksHeader = /prefixo|depend|carteira|tipo|historico|mes|taxa|media|rlz|realiz|orc|falta|acumulado/.test(headerish);
-      if (keysFilled && gLooksNumber && !looksHeader) return i;
-    }
-    return (aoa.length>1) ? 1 : 0;
-  }
-
-  function keyOf(row){
-    const safe = (x)=> (x===undefined || x===null) ? '' : String(x).trim();
-    return [safe(row[0]).toUpperCase(), safe(row[1]).toUpperCase(), safe(row[3]).toUpperCase(), safe(row[4]).toUpperCase()].join('¦');
-  }
-
-  function aggregateTwo(aoa1, aoa2){
-    const g1 = detectRealizadoCol(aoa1);
-    const g2 = detectRealizadoCol(aoa2);
-    logInfo(`Coluna “Realizado” detectada — Arq.1: índice ${g1}; Arq.2: índice ${g2}.`);
-    const start1 = findDataStart(aoa1, g1);
-    const start2 = findDataStart(aoa2, g2);
-    logInfo(`Início dos dados — Arq.1: linha ${start1}; Arq.2: linha ${start2}.`);
-
-    const map = new Map();
-    let rowsIn=0, rowsUsed=0;
-
-    function ingest(aoa, start, gIndex, label){
-      for (let i=start; i<aoa.length; i++){
-        const r = aoa[i] || [];
-        rowsIn++;
-        const a=r[0], b=r[1], d=r[3], e=r[4];
-        const allEmpty = [a,b,d,e,r[gIndex]].every(x => (x===undefined || x===null || String(x).trim?.() === ''));
-        if (allEmpty) continue;
-
-        const num = parseNumber(r[gIndex]);
-        if (isNaN(num)){
-          if (warnRowCount < LOG_ROW_LIMIT_WARN){
-            logWarn(`Valor não numérico em “Realizado” (${label}) na linha ${i+1}, coluna ${gIndex+1}: "${r[gIndex]}" — tratado como 0.`);
-          } else if (warnRowCount === LOG_ROW_LIMIT_WARN){
-            logWarn(`Muitas linhas com “Realizado” inválido; suprimindo avisos adicionais…`);
-          }
-          warnRowCount++;
+            uploadBox.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadBox.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    handleFileSelect(fileInput, fileInfo, fileNum);
+                }
+            });
         }
-        const realized = isNaN(num) ? 0 : num;
 
-        const k = keyOf(r);
-        if (!map.has(k)) map.set(k, {A:a, B:b, D:d, E:e, Gsum:0});
-        map.get(k).Gsum += realized;
-        rowsUsed++;
-      }
-    }
-    ingest(aoa1, start1, g1, 'Arq.1');
-    ingest(aoa2, start2, g2, 'Arq.2');
+        // Configurar drag and drop para ambas as caixas
+        setupDragAndDrop(
+            document.getElementById('uploadBox1'),
+            document.getElementById('file1'),
+            document.getElementById('fileInfo1'),
+            1
+        );
 
-    const out = Array.from(map.values()).sort((r1,r2)=>{
-      return String(r1.A).localeCompare(String(r2.A),'pt-BR') ||
-             String(r1.B).localeCompare(String(r2.B),'pt-BR') ||
-             String(r1.D).localeCompare(String(r2.D),'pt-BR') ||
-             String(r1.E).localeCompare(String(r2.E),'pt-BR');
-    });
+        setupDragAndDrop(
+            document.getElementById('uploadBox2'),
+            document.getElementById('file2'),
+            document.getElementById('fileInfo2'),
+            2
+        );
 
-    if (out.length===0){
-      logWarn('Nenhuma chave resultante. Verifique se as colunas A, B, D, E e “Realizado” existem e se há dados.');
-    }
-    return { rows: out, stats:{rowsIn, rowsOut: out.length, rowsUsed, g1, g2, start1, start2} };
-  }
+        // Função para selecionar arquivo
+        document.getElementById('file1').addEventListener('change', (e) => {
+            handleFileSelect(e.target, document.getElementById('fileInfo1'), 1);
+        });
 
-  function formatNumberBR(n){ return new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n||0); }
+        document.getElementById('file2').addEventListener('change', (e) => {
+            handleFileSelect(e.target, document.getElementById('fileInfo2'), 2);
+        });
 
-  function renderTable(rows){
-    outTable.innerHTML = '';
-    const frag = document.createDocumentFragment();
-    for (const r of rows){
-      const tr = document.createElement('tr');
-      [r.A, r.B, r.D, r.E, formatNumberBR(r.Gsum)].forEach((c)=>{
-        const td = document.createElement('td'); td.textContent = (c??''); tr.appendChild(td);
-      });
-      frag.appendChild(tr);
-    }
-    outTable.appendChild(frag);
-  }
+        // Event listener para mudança de opção de soma
+        document.querySelectorAll('input[name="somaOpcao"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (resultadoFinal.length > 0) {
+                    // Reprocessar com nova opção
+                    const novoResultado = processarDados(planilha1Data, planilha2Data);
+                    resultadoFinal = novoResultado;
+                    exibirResultados(resultadoFinal);
+                }
+            });
+        });
 
-  function toTSV(rows){
-    const header = ['Col A','Col B','Col D','Col E','Realizado (Σ)'];
-    const lines = [header.join('\t')];
-    rows.forEach(r=> lines.push([r.A, r.B, r.D, r.E, String((r.Gsum??0).toFixed(2)).replace('.',',')].join('\t')));
-    return lines.join('\n');
-  }
+        function handleFileSelect(input, fileInfo, fileNum) {
+            const file = input.files[0];
+            if (file) {
+                const fileName = file.name;
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                
+                fileInfo.innerHTML = `
+                    <strong>📁 ${fileName}</strong><br>
+                    Tamanho: ${fileSize} MB<br>
+                    Tipo: ${file.type}
+                `;
+                fileInfo.style.display = 'block';
+                
+                readExcelFile(file, fileNum);
+            }
+        }
 
-  function toCSV(rows, sep=';'){
-    const header = ['Col A','Col B','Col D','Col E','Realizado (Σ)'];
-    const esc=(v)=>{const s=(v??'').toString(); return /[";\n,]/.test(s)?`"${s.replace(/"/g,'""')}"`:s;}
-    const lines=[header.join(sep)];
-    rows.forEach(r=>{
-      const gStr = (r.Gsum??0).toFixed(2).replace('.',',');
-      lines.push([esc(r.A),esc(r.B),esc(r.D),esc(r.E),esc(gStr)].join(sep));
-    });
-    return lines.join('\n');
-  }
+        function readExcelFile(file, fileNum) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    
+                    // Converter para array de arrays, pulando as 2 primeiras linhas
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+                        header: 1,
+                        skiprows: 2,
+                        defval: null
+                    });
+                    
+                    if (fileNum === 1) {
+                        planilha1Data = jsonData;
+                    } else {
+                        planilha2Data = jsonData;
+                    }
+                    
+                    checkFilesReady();
+                } catch (error) {
+                    mostrarErro(`Erro ao processar ${file.name}: ${error.message}`);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
 
-  function setKPIs(stats, rows){
-    const mk=(label,value,color='green')=>{
-      const span=document.createElement('span'); span.className='tag';
-      if (color==='blue'){ span.classList.add('blue'); }
-      if (color==='warn'){ span.classList.add('warn'); }
-      if (color==='err'){  span.classList.add('err'); }
-      span.textContent = `${label}: ${value}`; return span;
-    }
-    kpi.innerHTML='';
-    kpi.appendChild(mk('Linhas lidas', stats.rowsIn, 'blue'));
-    kpi.appendChild(mk('Chaves únicas', stats.rowsOut, 'green'));
-    const total = rows.reduce((a,b)=>a+(b.Gsum||0),0);
-    kpi.appendChild(mk('Σ Realizado', new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(total), 'green'));
-    kpi.appendChild(mk('Col. “Realizado” Arq.1 (índice)', stats.g1, 'blue'));
-    kpi.appendChild(mk('Col. “Realizado” Arq.2 (índice)', stats.g2, 'blue'));
-    kpi.appendChild(mk('Início dados Arq.1 (linha)', stats.start1, 'blue'));
-    kpi.appendChild(mk('Início dados Arq.2 (linha)', stats.start2, 'blue'));
-  }
+        function checkFilesReady() {
+            const processBtn = document.getElementById('processBtn');
+            const verifyBtn = document.getElementById('verifyBtn');
+            if (planilha1Data && planilha2Data) {
+                processBtn.disabled = false;
+                processBtn.style.opacity = '1';
+                verifyBtn.disabled = false;
+                verifyBtn.style.opacity = '1';
+            }
+        }
 
-  // =========================
-  // Ações dos botões principais
-  // =========================
-  btnRun.addEventListener('click', async ()=>{
-    // Limpa log/badges no início
-    logBox.innerHTML=''; 
-    (function(){ const b1=document.getElementById('logInfo'); const b2=document.getElementById('logWarn'); const b3=document.getElementById('logErr'); if(b1&&b2&&b3){ b1.textContent='INFO: 0'; b2.textContent='WARN: 0'; b3.textContent='ERROR: 0'; }})();
-    (function(){ /* reseta contadores */ })();
-    // Recria contadores
-    (function(){ window._counts={info:0,warn:0,error:0}; })();
+        function mostrarErro(mensagem) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = mensagem;
+            errorMsg.style.display = 'block';
+            setTimeout(() => {
+                errorMsg.style.display = 'none';
+            }, 5000);
+        }
 
-    // Pequenos wrappers para atualizar os badges novamente
-    counts={info:0,warn:0,error:0}; warnRowCount=0;
-    const updateBadges = ()=>{
-      document.getElementById('logInfo').textContent=`INFO: ${counts.info}`;
-      document.getElementById('logWarn').textContent=`WARN: ${counts.warn}`;
-      document.getElementById('logErr').textContent =`ERROR: ${counts.error}`;
-    };
-    function addLog(level, msg){
-      counts[level]++; updateBadges();
-      const div = document.createElement('div');
-      div.className = `log-line ${level}`;
-      div.textContent = `[${new Date().toLocaleString('pt-BR')}] ${level.toUpperCase()}: ${msg}`;
-      logBox.appendChild(div);
-      logBox.scrollTop = logBox.scrollHeight;
-    }
-    const logInfo=(m)=>addLog('info',m), logWarn=(m)=>addLog('warn',m), logError=(m)=>addLog('error',m);
+        function verificarErros() {
+            const errorDetails = document.getElementById('errorDetails');
+            const errorList = document.getElementById('errorList');
+            errorList.innerHTML = '';
+            
+            let erros = [];
+            let avisos = [];
+            
+            // Verificar se os dados foram carregados
+            if (!planilha1Data || !planilha2Data) {
+                erros.push('Uma ou ambas as planilhas não foram carregadas corretamente.');
+            }
+            
+            // Verificar estrutura das planilhas
+            if (planilha1Data && planilha2Data) {
+                // Verificar número de colunas
+                const maxCols1 = Math.max(...planilha1Data.map(row => row ? row.length : 0));
+                const maxCols2 = Math.max(...planilha2Data.map(row => row ? row.length : 0));
+                
+                if (maxCols1 < 27) {
+                    erros.push(`Planilha 1 possui apenas ${maxCols1} colunas, mas são necessárias pelo menos 27 colunas.`);
+                }
+                
+                if (maxCols2 < 27) {
+                    erros.push(`Planilha 2 possui apenas ${maxCols2} colunas, mas são necessárias pelo menos 27 colunas.`);
+                }
+                
+                // Verificar dados de identificação
+                let countNull1 = 0;
+                let countNull2 = 0;
+                let countNumeric1 = 0;
+                let countNumeric2 = 0;
+                
+                planilha1Data.forEach((row, index) => {
+                    if (row && row.length >= 5) {
+                        const a = row[0], b = row[1], d = row[3], e = row[4];
+                        if (a === null || b === null || d === null || e === null) {
+                            countNull1++;
+                        }
+                        if (typeof a === 'number' || !isNaN(a)) countNumeric1++;
+                    }
+                });
+                
+                planilha2Data.forEach((row, index) => {
+                    if (row && row.length >= 5) {
+                        const a = row[0], b = row[1], d = row[3], e = row[4];
+                        if (a === null || b === null || d === null || e === null) {
+                            countNull2++;
+                        }
+                        if (typeof a === 'number' || !isNaN(a)) countNumeric2++;
+                    }
+                });
+                
+                if (countNull1 > 0) {
+                    avisos.push(`Planilha 1: ${countNull1} registros com dados de identificação nulos (serão ignorados).`);
+                }
+                
+                if (countNull2 > 0) {
+                    avisos.push(`Planilha 2: ${countNull2} registros com dados de identificação nulos (serão ignorados).`);
+                }
+                
+                // Verificar correspondência de chaves
+                const chaves1 = new Set();
+                const chaves2 = new Set();
+                
+                planilha1Data.forEach(row => {
+                    if (row && row.length >= 5) {
+                        const a = row[0], b = row[1], d = row[3], e = row[4];
+                        if (a !== null && b !== null && d !== null && e !== null) {
+                            chaves1.add(`${a}|${b}|${d}|${e}`);
+                        }
+                    }
+                });
+                
+                planilha2Data.forEach(row => {
+                    if (row && row.length >= 5) {
+                        const a = row[0], b = row[1], d = row[3], e = row[4];
+                        if (a !== null && b !== null && d !== null && e !== null) {
+                            chaves2.add(`${a}|${b}|${d}|${e}`);
+                        }
+                    }
+                });
+                
+                const chavesComuns = [...chaves1].filter(chave => chaves2.has(chave));
+                const chavesSoPlan1 = [...chaves1].filter(chave => !chaves2.has(chave));
+                const chavesSoPlan2 = [...chaves2].filter(chave => !chaves1.has(chave));
+                
+                if (chavesComuns.length === 0) {
+                    avisos.push('Nenhuma chave de identificação corresponde entre as planilhas. Todas as linhas serão adicionadas como novos registros.');
+                } else {
+                    avisos.push(`${chavesComuns.length} registros correspondentes encontrados para soma.`);
+                }
+                
+                if (chavesSoPlan1.length > 0) {
+                    avisos.push(`${chavesSoPlan1.length} registros únicos na Planilha 1.`);
+                }
+                
+                if (chavesSoPlan2.length > 0) {
+                    avisos.push(`${chavesSoPlan2.length} registros únicos na Planilha 2.`);
+                }
+            }
+            
+            // Exibir resultados
+            if (erros.length === 0 && avisos.length === 0) {
+                errorList.innerHTML = '<li style="color: #2e7d32; border-left-color: #4caf50;">✅ Nenhum erro ou aviso encontrado. As planilhas estão prontas para processamento.</li>';
+            }
+            
+            erros.forEach(erro => {
+                errorList.innerHTML += `<li style="color: #c62828; border-left-color: #f44336;">❌ ${erro}</li>`;
+            });
+            
+            avisos.forEach(aviso => {
+                errorList.innerHTML += `<li style="color: #e65100; border-left-color: #ff9800;">⚠️ ${aviso}</li>`;
+            });
+            
+            errorDetails.style.display = 'block';
+        }
 
-    logInfo('Iniciando processamento…');
-    try{
-      if (!file1.files[0] || !file2.files[0]){
-        logError('Selecione as duas planilhas antes de processar.');
-        return;
-      }
-      logInfo(`Lendo arquivo 1: ${file1.files[0].name}`);
-      logInfo(`Lendo arquivo 2: ${file2.files[0].name}`);
-      btnRun.disabled=true; btnRun.textContent='Processando…';
+        function processarPlanilhas() {
+            const processBtn = document.getElementById('processBtn');
+            const resultsSection = document.getElementById('resultsSection');
+            const loadingMsg = document.getElementById('loadingMsg');
+            const resultTable = document.getElementById('resultTable');
+            
+            // Mostrar loading
+            processBtn.disabled = true;
+            resultsSection.style.display = 'block';
+            loadingMsg.style.display = 'block';
+            resultTable.style.display = 'none';
+            
+            setTimeout(() => {
+                try {
+                    const resultado = processarDados(planilha1Data, planilha2Data);
+                    resultadoFinal = resultado;
+                    
+                    exibirResultados(resultado);
+                    loadingMsg.style.display = 'none';
+                    resultTable.style.display = 'table';
+                    processBtn.disabled = false;
+                } catch (error) {
+                    mostrarErro(`Erro ao processar dados: ${error.message}`);
+                    processBtn.disabled = false;
+                }
+            }, 500);
+        }
 
-      let aoa1, aoa2;
-      try { aoa1 = await readFirstSheetArrayBuffer(file1.files[0]); }
-      catch(e){ logError(`Falha ao ler o Arquivo 1: ${e.message||e}`); throw e; }
-      try { aoa2 = await readFirstSheetArrayBuffer(file2.files[0]); }
-      catch(e){ logError(`Falha ao ler o Arquivo 2: ${e.message||e}`); throw e; }
+        function processarDados(data1, data2) {
+            const mapaDados = new Map();
+            const opcaoSoma = document.querySelector('input[name="somaOpcao"]:checked').value;
+            
+            // Processar primeira planilha
+            data1.forEach((row, index) => {
+                if (row && row.length >= 27) {
+                    const a = row[0]; // Coluna A
+                    const b = row[1]; // Coluna B
+                    const d = row[3]; // Coluna D
+                    const e = row[4]; // Coluna E
+                    const g = parseFloat(row[6]) || 0; // Coluna G
+                    const r = parseFloat(row[17]) || 0; // Coluna R
+                    const s = parseFloat(row[26]) || 0; // Coluna S
+                    
+                    // Verificar se os dados de identificação não são nulos
+                    if (a !== null && a !== undefined && b !== null && b !== undefined && 
+                        d !== null && d !== undefined && e !== null && e !== undefined) {
+                        
+                        const chave = `${a}|${b}|${d}|${e}`;
+                        mapaDados.set(chave, {
+                            a: a,
+                            b: b,
+                            d: d,
+                            e: e,
+                            g: g,
+                            r: r,
+                            s: s,
+                            opcao: opcaoSoma
+                        });
+                    }
+                }
+            });
+            
+            // Processar segunda planilha (somar)
+            data2.forEach((row, index) => {
+                if (row && row.length >= 27) {
+                    const a = row[0]; // Coluna A
+                    const b = row[1]; // Coluna B
+                    const d = row[3]; // Coluna D
+                    const e = row[4]; // Coluna E
+                    const g = parseFloat(row[6]) || 0; // Coluna G
+                    const r = parseFloat(row[17]) || 0; // Coluna R
+                    const s = parseFloat(row[26]) || 0; // Coluna S
+                    
+                    // Verificar se os dados de identificação não são nulos
+                    if (a !== null && a !== undefined && b !== null && b !== undefined && 
+                        d !== null && d !== undefined && e !== null && e !== undefined) {
+                        
+                        const chave = `${a}|${b}|${d}|${e}`;
+                        const existente = mapaDados.get(chave);
+                        
+                        if (existente) {
+                            // Somar valores
+                            existente.g += g;
+                            existente.r += r;
+                            existente.s += s;
+                        } else {
+                            // Adicionar novo
+                            mapaDados.set(chave, {
+                                a: a,
+                                b: b,
+                                d: d,
+                                e: e,
+                                g: g,
+                                r: r,
+                                s: s,
+                                opcao: opcaoSoma
+                            });
+                        }
+                    }
+                }
+            });
+            
+            // Converter para array e calcular totais
+            const resultado = Array.from(mapaDados.values()).map(item => {
+                let total;
+                if (item.opcao === 'RS') {
+                    total = item.r + item.s; // Somar apenas R e S
+                } else {
+                    total = item.g + item.r + item.s; // Somar G + R + S
+                }
+                return {
+                    ...item,
+                    total: total
+                };
+            });
+            
+            // Ordenar por total decrescente
+            resultado.sort((a, b) => b.total - a.total);
+            
+            return resultado;
+        }
 
-      const {rows, stats} = aggregateTwo(aoa1, aoa2);
-      lastRows = rows;
-      renderTable(rows);
-      outText.value = toTSV(rows);
-      setKPIs(stats, rows);
+        function exibirResultados(resultado) {
+            const opcaoSoma = document.querySelector('input[name="somaOpcao"]:checked').value;
+            
+            // Atualizar resumo
+            const summaryStats = document.getElementById('summaryStats');
+            const totalRegistros = resultado.length;
+            const somaTotal = resultado.reduce((acc, item) => acc + item.total, 0);
+            const mediaTotal = somaTotal / totalRegistros;
+            const somaG = resultado.reduce((acc, item) => acc + item.g, 0);
+            const somaR = resultado.reduce((acc, item) => acc + item.r, 0);
+            const somaS = resultado.reduce((acc, item) => acc + item.s, 0);
+            
+            let resumoHtml = `
+                <div class="stat-box">
+                    <div class="stat-number">${totalRegistros.toLocaleString('pt-BR')}</div>
+                    <div class="stat-label">Registros Processados</div>
+                </div>
+            `;
+            
+            if (opcaoSoma === 'GRS') {
+                resumoHtml += `
+                    <div class="stat-box">
+                        <div class="stat-number">${somaG.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                        <div class="stat-label">Soma Coluna G</div>
+                    </div>
+                `;
+            }
+            
+            resumoHtml += `
+                <div class="stat-box">
+                    <div class="stat-number">${somaR.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                    <div class="stat-label">Soma Coluna R</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">${somaS.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                    <div class="stat-label">Soma Coluna S</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">${somaTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                    <div class="stat-label">${opcaoSoma === 'GRS' ? 'Total (G+R+S)' : 'Total (R+S)'}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">${mediaTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                    <div class="stat-label">Média por Registro</div>
+                </div>
+            `;
+            
+            summaryStats.innerHTML = resumoHtml;
+            
+            // Atualizar cabeçalho da tabela
+            const table = document.getElementById('resultTable');
+            const thead = table.querySelector('thead');
+            const tbody = document.getElementById('resultTableBody');
+            tbody.innerHTML = '';
+            
+            if (opcaoSoma === 'RS') {
+                thead.innerHTML = `
+                    <tr>
+                        <th>Prefixo (A)</th>
+                        <th>Dependência (B)</th>
+                        <th>Carteira (D)</th>
+                        <th>Tipo Carteira (E)</th>
+                        <th>Coluna G (não somada)</th>
+                        <th>Coluna R</th>
+                        <th>Coluna S</th>
+                        <th>Total (R+S)</th>
+                    </tr>
+                `;
+            } else {
+                thead.innerHTML = `
+                    <tr>
+                        <th>Prefixo (A)</th>
+                        <th>Dependência (B)</th>
+                        <th>Carteira (D)</th>
+                        <th>Tipo Carteira (E)</th>
+                        <th>Coluna G</th>
+                        <th>Coluna R</th>
+                        <th>Coluna S</th>
+                        <th>Total (G+R+S)</th>
+                    </tr>
+                `;
+            }
+            
+            // Atualizar dados da tabela
+            resultado.forEach(item => {
+                const row = tbody.insertRow();
+                if (opcaoSoma === 'RS') {
+                    // Mostrar apenas colunas R e S (coluna G como não somada)
+                    row.innerHTML = `
+                        <td>${item.a}</td>
+                        <td>${item.b}</td>
+                        <td>${item.d}</td>
+                        <td>${item.e}</td>
+                        <td class="number" style="color: #999; font-style: italic;">${item.g.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        <td class="number">${item.r.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        <td class="number">${item.s.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        <td class="number" style="font-weight: bold; color: #2e7d32;">${item.total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    `;
+                } else {
+                    // Mostrar todas as colunas (G, R, S)
+                    row.innerHTML = `
+                        <td>${item.a}</td>
+                        <td>${item.b}</td>
+                        <td>${item.d}</td>
+                        <td>${item.e}</td>
+                        <td class="number">${item.g.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        <td class="number">${item.r.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        <td class="number">${item.s.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        <td class="number" style="font-weight: bold; color: #2e7d32;">${item.total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    `;
+                }
+            });
+        }
 
-      if (rows.length>0){
-        logInfo(`Processamento concluído com ${rows.length} chaves agregadas.`);
-      } else {
-        logWarn('Processamento concluído, porém sem linhas agregadas.');
-      }
+        function copiarTabela() {
+            const table = document.getElementById('resultTable');
+            const rows = table.querySelectorAll('tr');
+            let texto = 'Prefixo\tDependência\tCarteira\tTipo Carteira\tColuna G\tColuna R\tColuna S\tTotal Soma\n';
+            
+            rows.forEach((row, index) => {
+                if (index > 0) { // Pular cabeçalho
+                    const cells = row.querySelectorAll('td');
+                    const rowData = Array.from(cells).map(cell => {
+                        return cell.textContent.replace(/\./g, '').replace(/,/g, '.');
+                    });
+                    texto += rowData.join('\t') + '\n';
+                }
+            });
+            
+            navigator.clipboard.writeText(texto).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copiado!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                mostrarErro('Erro ao copiar para a área de transferência');
+            });
+        }
 
-      btnCopy.disabled = rows.length===0; btnCsv.disabled = rows.length===0;
-    }catch(err){
-      logError(`Erro inesperado: ${err && err.message ? err.message : err}`);
-    }finally{
-      btnRun.disabled=false; btnRun.textContent='Processar Planilhas';
-    }
-  });
-
-  btnCopyLog.addEventListener('click', async ()=>{
-    const text = Array.from(logBox.querySelectorAll('.log-line')).map(n=>n.textContent).join('\n');
-    if (navigator.clipboard){ await navigator.clipboard.writeText(text); }
-    else { const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
-    btnCopyLog.textContent='Copiado!'; setTimeout(()=>btnCopyLog.textContent='Copiar Log',1200);
-  });
-
-  btnClearLog.addEventListener('click', ()=>{
-    logBox.innerHTML=''; counts={info:0,warn:0,error:0}; 
-    document.getElementById('logInfo').textContent='INFO: 0';
-    document.getElementById('logWarn').textContent='WARN: 0';
-    document.getElementById('logErr').textContent='ERROR: 0';
-  });
-
-  btnCopy.addEventListener('click', async ()=>{
-    outText.select(); outText.setSelectionRange(0, 999999);
-    const ok=document.execCommand('copy');
-    if(!ok && navigator.clipboard){ await navigator.clipboard.writeText(outText.value); }
-    btnCopy.textContent='Copiado!'; setTimeout(()=>btnCopy.textContent='Copiar (TSV)',1200);
-  });
-
-  btnCsv.addEventListener('click', ()=>{
-    const csv = toCSV(lastRows,';');
-    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob);
-    const a=document.createElement('a'); a.href=url; a.download='resultado_soma_realizado.csv'; document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); a.remove();
-    const div = document.createElement('div'); div.className='log-line info'; div.textContent=`[${new Date().toLocaleString('pt-BR')}] INFO: Arquivo CSV gerado para download.`; logBox.appendChild(div);
-  });
-
-  btnClear.addEventListener('click', ()=>{
-    file1.value=''; file2.value='';
-    outTable.innerHTML=''; outText.value='';
-    btnCopy.disabled = true; btnCsv.disabled = true;
-    kpi.innerHTML=''; lastRows=[];
-    logBox.innerHTML='';
-    const reset = (id,txt)=>{ const el=document.getElementById(id); if(el) el.textContent=txt; };
-    reset('logInfo','INFO: 0'); reset('logWarn','WARN: 0'); reset('logErr','ERROR: 0');
-    const div = document.createElement('div'); div.className='log-line info'; div.textContent=`[${new Date().toLocaleString('pt-BR')}] INFO: Interface limpa.`; logBox.appendChild(div);
-  });
-
-  // As funções auxiliares (detect/aggregate/etc.) ficam fora para reuso
-  function detectRealizadoCol(aoa){
-    const MAX_ROWS = Math.min(aoa.length, 6);
-    let bestIdx = -1, bestScore=-1;
-    for (let r=0;r<MAX_ROWS;r++){
-      const row = aoa[r]||[];
-      for (let c=0;c<Math.min(row.length, 120);c++){
-        const s = String(row[c]??'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
-        if (!s) continue;
-        let score = 0;
-        if (/\b(rlz|rlz\.|realizado|realizacao|realiz)\b/.test(s)) score += 3;
-        if (/acum|acumul|mes|media|taxa|%|orc|falta/.test(s)) score -= 1;
-        if (score>bestScore){ bestScore=score; bestIdx=c; }
-      }
-    }
-    return bestIdx>=0 ? bestIdx : 6;
-  }
-
-  function findDataStart(aoa, gIndex){
-    const MAX_SCAN = Math.min(aoa.length, 50);
-    for (let i=0;i<MAX_SCAN;i++){
-      const r = aoa[i]||[];
-      const keys = [r[0], r[1], r[3], r[4]].map(x=>String(x??'').trim());
-      const keysFilled = keys.some(x=>x!=='');
-      let s = String(r.join(' ')||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim();
-      const looksHeader = /prefixo|depend|carteira|tipo|historico|mes|taxa|media|rlz|realiz|orc|falta|acumulado/.test(s);
-      const g = parseNumber(r[gIndex]);
-      const gLooksNumber = !isNaN(g) && (String(r[gIndex]).trim()!=='' || g!==0);
-      if (keysFilled && gLooksNumber && !looksHeader) return i;
-    }
-    return (aoa.length>1) ? 1 : 0;
-  }
-
-  function aggregateTwo(aoa1, aoa2){
-    const g1 = detectRealizadoCol(aoa1);
-    const g2 = detectRealizadoCol(aoa2);
-    const start1 = findDataStart(aoa1, g1);
-    const start2 = findDataStart(aoa2, g2);
-
-    const map = new Map();
-    let rowsIn=0, rowsUsed=0;
-
-    function ingest(aoa, start, gIndex){
-      for (let i=start; i<aoa.length; i++){
-        const r = aoa[i] || [];
-        rowsIn++;
-        const a=r[0], b=r[1], d=r[3], e=r[4];
-        const allEmpty = [a,b,d,e,r[gIndex]].every(x => (x===undefined || x===null || String(x).trim?.() === ''));
-        if (allEmpty) continue;
-        const num = parseNumber(r[gIndex]);
-        const realized = isNaN(num) ? 0 : num;
-        const k = [String(a??'').trim().toUpperCase(), String(b??'').trim().toUpperCase(), String(d??'').trim().toUpperCase(), String(e??'').trim().toUpperCase()].join('¦');
-        if (!map.has(k)) map.set(k, {A:a, B:b, D:d, E:e, Gsum:0});
-        map.get(k).Gsum += realized;
-        rowsUsed++;
-      }
-    }
-    ingest(aoa1, start1, g1);
-    ingest(aoa2, start2, g2);
-
-    const out = Array.from(map.values()).sort((r1,r2)=>{
-      return String(r1.A).localeCompare(String(r2.A),'pt-BR') ||
-             String(r1.B).localeCompare(String(r2.B),'pt-BR') ||
-             String(r1.D).localeCompare(String(r2.D),'pt-BR') ||
-             String(r1.E).localeCompare(String(r2.E),'pt-BR');
-    });
-
-    return { rows: out, stats:{rowsIn, rowsOut: out.length, rowsUsed, g1, g2, start1, start2} };
-  }
-
-})();
-</script>
+        function exportarExcel() {
+            if (resultadoFinal.length === 0) {
+                mostrarErro('Nenhum dado para exportar');
+                return;
+            }
+            
+            const ws_data = [
+                ['Prefixo (A)', 'Dependência (B)', 'Carteira (D)', 'Tipo Carteira (E)', 'Coluna G', 'Coluna R', 'Coluna S', 'Total Soma'],
+                ...resultadoFinal.map(item => [
+                    item.a,
+                    item.b,
+                    item.d,
+                    item.e,
+                    item.g,
+                    item.r,
+                    item.s,
+                    item.total
+                ])
+            ];
+            
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Soma Planilhas');
+            
+            // Ajustar larguras das colunas
+            const cols = [
+                { wch: 12 }, // Prefixo
+                { wch: 20 }, // Dependência
+                { wch: 10 }, // Carteira
+                { wch: 25 }, // Tipo Carteira
+                { wch: 15 }, // Coluna G
+                { wch: 15 }, // Coluna R
+                { wch: 15 }, // Coluna S
+                { wch: 15 }  // Total
+            ];
+            ws['!cols'] = cols;
+            
+            XLSX.writeFile(wb, 'resultado_soma_planilhas.xlsx');
+        }
+    </script>
 </body>
 </html>
