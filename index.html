@@ -56,6 +56,16 @@
             font-size: 0.9em;
         }
 
+        .warning-tooltip {
+            background: #fff3e0;
+            color: #e65100;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 3px solid #ff9800;
+            font-size: 0.9em;
+        }
+
         .main-content {
             padding: 30px;
         }
@@ -408,7 +418,7 @@
     <div class="container">
         <div class="header">
             <h1>Somador de Planilhas</h1>
-            <p>Ferramenta para somar valores realizados (colunas G, R, S) das planilhas</p>
+            <p>Ferramenta para somar valores realizados (Coluna G: Rlz., Coluna R: D-0, Coluna S: % Evolução Taxa Média) das planilhas</p>
         </div>
 
         <div class="main-content">
@@ -434,9 +444,14 @@
 
             <div class="options-section">
                 <h3>⚙️ Opções de Soma</h3>
+                <div class="warning-tooltip">
+                    ⚠️ <strong>Alerta:</strong> Suas planilhas contêm 31 valores negativos na Coluna S (% Evolução Taxa Média, mínimo: -31,48). Eles são cálculos normais (variações percentuais).
+                </div>
                 <div class="info-tooltip">
                     💡 <strong>Dica:</strong> Use "Verificar Erros" para analisar as planilhas antes do processamento.
                 </div>
+                
+                <h4 style="color: #333; margin: 15px 0 10px 0;">📊 Colunas para Somar:</h4>
                 <div class="column-options">
                     <div class="option-group">
                         <input type="radio" id="optionGRS" name="somaOpcao" value="GRS" checked>
@@ -445,6 +460,22 @@
                     <div class="option-group">
                         <input type="radio" id="optionRS" name="somaOpcao" value="RS">
                         <label for="optionRS">Somar apenas Colunas R + S</label>
+                    </div>
+                </div>
+                
+                <h4 style="color: #333; margin: 20px 0 10px 0;">🔢 Tratamento de Valores Negativos:</h4>
+                <div class="column-options">
+                    <div class="option-group">
+                        <input type="radio" id="negativoIncluir" name="negativoOpcao" value="incluir" checked>
+                        <label for="negativoIncluir">Incluir valores negativos (padrão)</label>
+                    </div>
+                    <div class="option-group">
+                        <input type="radio" id="negativoZerar" name="negativoOpcao" value="zerar">
+                        <label for="negativoZerar">Substituir negativos por zero</label>
+                    </div>
+                    <div class="option-group">
+                        <input type="radio" id="negativoAbs" name="negativoOpcao" value="absoluto">
+                        <label for="negativoAbs">Usar valor absoluto</label>
                     </div>
                 </div>
             </div>
@@ -559,11 +590,23 @@
             handleFileSelect(e.target, document.getElementById('fileInfo2'), 2);
         });
 
-        // Event listener para mudança de opção de soma
+        // Event listeners para mudança de opção de soma
         document.querySelectorAll('input[name="somaOpcao"]').forEach(radio => {
             radio.addEventListener('change', () => {
                 if (resultadoFinal.length > 0) {
                     // Reprocessar com nova opção
+                    const novoResultado = processarDados(planilha1Data, planilha2Data);
+                    resultadoFinal = novoResultado;
+                    exibirResultados(resultadoFinal);
+                }
+            });
+        });
+
+        // Event listeners para mudança de opção de valores negativos
+        document.querySelectorAll('input[name="negativoOpcao"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (resultadoFinal.length > 0) {
+                    // Reprocessar com nova opção de negativos
                     const novoResultado = processarDados(planilha1Data, planilha2Data);
                     resultadoFinal = novoResultado;
                     exibirResultados(resultadoFinal);
@@ -663,6 +706,36 @@
                 
                 if (maxCols2 < 27) {
                     erros.push(`Planilha 2 possui apenas ${maxCols2} colunas, mas são necessárias pelo menos 27 colunas.`);
+                }
+                
+                // Verificar valores negativos nas colunas
+                let countNegativos1 = 0;
+                let countNegativos2 = 0;
+                
+                planilha1Data.forEach((row, index) => {
+                    if (row && row.length >= 27) {
+                        const g = parseFloat(row[6]) || 0;
+                        const r = parseFloat(row[17]) || 0;
+                        const s = parseFloat(row[26]) || 0;
+                        if (g < 0 || r < 0 || s < 0) countNegativos1++;
+                    }
+                });
+                
+                planilha2Data.forEach((row, index) => {
+                    if (row && row.length >= 27) {
+                        const g = parseFloat(row[6]) || 0;
+                        const r = parseFloat(row[17]) || 0;
+                        const s = parseFloat(row[26]) || 0;
+                        if (g < 0 || r < 0 || s < 0) countNegativos2++;
+                    }
+                });
+                
+                if (countNegativos1 > 0) {
+                    avisos.push(`Planilha 1: ${countNegativos1} registros com valores negativos (principalmente na Coluna S - percentuais normais).`);
+                }
+                
+                if (countNegativos2 > 0) {
+                    avisos.push(`Planilha 2: ${countNegativos2} registros com valores negativos (principalmente na Coluna S - percentuais normais).`);
                 }
                 
                 // Verificar dados de identificação
@@ -787,6 +860,18 @@
         function processarDados(data1, data2) {
             const mapaDados = new Map();
             const opcaoSoma = document.querySelector('input[name="somaOpcao"]:checked').value;
+            const opcaoNegativo = document.querySelector('input[name="negativoOpcao"]:checked').value;
+            
+            // Função para tratar valores negativos
+            function tratarNegativo(valor) {
+                if (opcaoNegativo === 'zerar') {
+                    return Math.max(0, valor);
+                } else if (opcaoNegativo === 'absoluto') {
+                    return Math.abs(valor);
+                } else {
+                    return valor; // incluir (padrão)
+                }
+            }
             
             // Processar primeira planilha
             data1.forEach((row, index) => {
@@ -795,9 +880,9 @@
                     const b = row[1]; // Coluna B
                     const d = row[3]; // Coluna D
                     const e = row[4]; // Coluna E
-                    const g = parseFloat(row[6]) || 0; // Coluna G
-                    const r = parseFloat(row[17]) || 0; // Coluna R
-                    const s = parseFloat(row[26]) || 0; // Coluna S
+                    const g = tratarNegativo(parseFloat(row[6]) || 0);  // Coluna G (Rlz.)
+                    const r = tratarNegativo(parseFloat(row[17]) || 0); // Coluna R (D-0)
+                    const s = tratarNegativo(parseFloat(row[26]) || 0); // Coluna S (% Evolução Taxa Média)
                     
                     // Verificar se os dados de identificação não são nulos
                     if (a !== null && a !== undefined && b !== null && b !== undefined && 
@@ -825,9 +910,9 @@
                     const b = row[1]; // Coluna B
                     const d = row[3]; // Coluna D
                     const e = row[4]; // Coluna E
-                    const g = parseFloat(row[6]) || 0; // Coluna G
-                    const r = parseFloat(row[17]) || 0; // Coluna R
-                    const s = parseFloat(row[26]) || 0; // Coluna S
+                    const g = tratarNegativo(parseFloat(row[6]) || 0);  // Coluna G (Rlz.)
+                    const r = tratarNegativo(parseFloat(row[17]) || 0); // Coluna R (D-0)
+                    const s = tratarNegativo(parseFloat(row[26]) || 0); // Coluna S (% Evolução Taxa Média)
                     
                     // Verificar se os dados de identificação não são nulos
                     if (a !== null && a !== undefined && b !== null && b !== undefined && 
