@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Somador de Planilhas - Soma de Valores Realizados</title>
-    <script src="./xlsx.full.min.js"></script>
+    <title>Somador de Planilhas - Versão Aprimorada</title>
+    <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -23,13 +23,13 @@
             max-width: 1200px;
             margin: 0 auto;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
         }
 
         .header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(45deg, #4CAF50, #45a049);
             color: white;
             padding: 30px;
             text-align: center;
@@ -38,7 +38,7 @@
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
-            font-weight: 300;
+            font-weight: 700;
         }
 
         .header p {
@@ -46,27 +46,7 @@
             opacity: 0.9;
         }
 
-        .info-tooltip {
-            background: #e1f5fe;
-            color: #01579b;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            border-left: 3px solid #0288d1;
-            font-size: 0.9em;
-        }
-
-        .warning-tooltip {
-            background: #fff3e0;
-            color: #e65100;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            border-left: 3px solid #ff9800;
-            font-size: 0.9em;
-        }
-
-        .main-content {
+        .content {
             padding: 30px;
         }
 
@@ -78,22 +58,23 @@
         }
 
         .upload-box {
-            border: 3px dashed #ddd;
-            border-radius: 10px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 15px;
             padding: 30px;
             text-align: center;
             transition: all 0.3s ease;
-            background: #f8f9fa;
+            position: relative;
         }
 
         .upload-box:hover {
-            border-color: #4facfe;
-            background: #e3f2fd;
+            border-color: #4CAF50;
+            background: #f0f9ff;
         }
 
         .upload-box.dragover {
-            border-color: #00f2fe;
-            background: #e0f7fa;
+            border-color: #4CAF50;
+            background: #e8f5e8;
             transform: scale(1.02);
         }
 
@@ -108,136 +89,99 @@
         }
 
         .upload-btn {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: #4CAF50;
             color: white;
             border: none;
             padding: 12px 25px;
             border-radius: 25px;
             cursor: pointer;
             font-size: 1em;
-            transition: transform 0.3s ease;
-            margin: 10px;
+            transition: all 0.3s ease;
+            margin: 10px 0;
         }
 
         .upload-btn:hover {
+            background: #45a049;
             transform: translateY(-2px);
         }
 
         .file-info {
             margin-top: 15px;
             padding: 10px;
-            background: #e8f5e8;
-            border-radius: 5px;
-            color: #2e7d32;
-            display: none;
+            background: #e3f2fd;
+            border-radius: 8px;
+            font-size: 0.9em;
+            color: #1565c0;
         }
 
-        .options-section {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            border-left: 5px solid #ff9800;
-        }
-
-        .options-section h3 {
-            color: #e65100;
-            margin-bottom: 15px;
+        .controls {
             display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .column-options {
-            display: flex;
-            gap: 20px;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
             flex-wrap: wrap;
-            align-items: center;
         }
 
-        .option-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .option-group input[type="radio"] {
-            margin: 0;
-        }
-
-        .verify-btn {
-            background: linear-gradient(135deg, #f57c00 0%, #ffb74d 100%);
-            color: white;
+        .btn {
+            padding: 15px 30px;
             border: none;
-            padding: 12px 25px;
             border-radius: 25px;
             cursor: pointer;
             font-size: 1em;
-            margin-left: 15px;
+            font-weight: 600;
             transition: all 0.3s ease;
+            min-width: 200px;
         }
 
-        .verify-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(245, 124, 0, 0.3);
-        }
-
-        .verify-btn:disabled {
+        .btn:disabled {
             background: #ccc;
             cursor: not-allowed;
             transform: none;
         }
 
-        .error-details {
-            background: #fff3e0;
-            border: 1px solid #ffcc02;
-            border-radius: 5px;
-            padding: 15px;
-            margin-top: 15px;
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+
+        .status-section {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
             display: none;
         }
 
-        .error-details h4 {
-            color: #e65100;
-            margin-bottom: 10px;
+        .status-info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            color: #1565c0;
         }
 
-        .error-list {
-            list-style: none;
-            padding: 0;
+        .status-error {
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
+            color: #c62828;
         }
 
-        .error-list li {
-            background: white;
-            margin: 5px 0;
-            padding: 8px;
-            border-radius: 3px;
-            border-left: 3px solid #ff9800;
-        }
-
-        .process-btn {
-            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1.2em;
-            font-weight: bold;
-            display: block;
-            margin: 20px auto;
-            transition: all 0.3s ease;
-        }
-
-        .process-btn:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(86, 171, 47, 0.3);
-        }
-
-        .process-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
+        .status-success {
+            background: #e8f5e8;
+            border: 1px solid #c8e6c9;
+            color: #2e7d32;
         }
 
         .results-section {
@@ -245,143 +189,95 @@
             display: none;
         }
 
-        .summary {
-            background: #e3f2fd;
-            border-radius: 10px;
+        .results-header {
+            background: #f8f9fa;
             padding: 20px;
+            border-radius: 10px;
             margin-bottom: 20px;
-            border-left: 5px solid #2196f3;
         }
 
-        .summary h3 {
-            color: #1976d2;
+        .results-header h3 {
+            color: #333;
             margin-bottom: 10px;
         }
 
-        .summary-stats {
+        .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
-            margin-top: 15px;
+            margin: 20px 0;
         }
 
-        .stat-box {
+        .stat-card {
             background: white;
-            padding: 15px;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .stat-number {
-            font-size: 1.8em;
+            font-size: 2em;
             font-weight: bold;
-            color: #1976d2;
+            color: #4CAF50;
         }
 
         .stat-label {
             color: #666;
-            font-size: 0.9em;
             margin-top: 5px;
         }
 
         .table-container {
-            background: white;
+            overflow-x: auto;
             border-radius: 10px;
-            overflow: hidden;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
-        .table-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .table-actions {
-            background: #f5f5f5;
-            padding: 15px;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .copy-btn, .export-btn {
-            background: #4caf50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 0 5px;
-            font-size: 0.9em;
-            transition: background 0.3s ease;
-        }
-
-        .copy-btn:hover, .export-btn:hover {
-            background: #45a049;
-        }
-
-        .export-btn {
-            background: #2196f3;
-        }
-
-        .export-btn:hover {
-            background: #1976d2;
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        table {
+        .results-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.9em;
+            background: white;
         }
 
-        th {
-            background: #f8f9fa;
-            padding: 12px 8px;
+        .results-table th {
+            background: #4CAF50;
+            color: white;
+            padding: 15px;
             text-align: left;
-            font-weight: bold;
-            color: #333;
-            border-bottom: 2px solid #ddd;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            font-weight: 600;
         }
 
-        td {
-            padding: 10px 8px;
+        .results-table td {
+            padding: 12px 15px;
             border-bottom: 1px solid #eee;
         }
 
-        tr:hover {
+        .results-table tbody tr:hover {
             background: #f8f9fa;
         }
 
-        .number {
-            text-align: right;
-            font-family: 'Courier New', monospace;
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .loading {
+            display: none;
             text-align: center;
-            padding: 40px;
-            color: #666;
+            padding: 20px;
         }
 
         .spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #4facfe;
+            border-top: 4px solid #4CAF50;
             border-radius: 50%;
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin: 0 auto 15px;
         }
 
         @keyframes spin {
@@ -389,13 +285,23 @@
             100% { transform: rotate(360deg); }
         }
 
-        .error {
-            background: #ffebee;
-            color: #c62828;
+        .error-details {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
             padding: 15px;
-            border-radius: 5px;
-            border-left: 5px solid #f44336;
             margin: 15px 0;
+            display: none;
+        }
+
+        .error-details h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .error-list {
+            color: #856404;
+            font-size: 0.9em;
         }
 
         @media (max-width: 768px) {
@@ -408,8 +314,13 @@
                 font-size: 2em;
             }
             
-            .summary-stats {
+            .stats {
                 grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
             }
         }
     </style>
@@ -417,11 +328,12 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Somador de Planilhas</h1>
-            <p>Ferramenta para somar valores realizados (Coluna G: Rlz., Coluna R: D-0, Coluna S: D-0 Coban) das planilhas</p>
+            <h1>📊 Somador de Planilhas</h1>
+            <p>Ferramenta para somar valores das colunas G (Rlz.) e R (D-0) de duas planilhas Excel</p>
         </div>
 
-        <div class="main-content">
+        <div class="content">
+            <!-- Seção de Upload -->
             <div class="upload-section">
                 <div class="upload-box" id="uploadBox1">
                     <h3>📊 Planilha 1</h3>
@@ -429,7 +341,7 @@
                     <button class="upload-btn" onclick="document.getElementById('file1').click()">
                         Selecionar Arquivo
                     </button>
-                    <div class="file-info" id="fileInfo1"></div>
+                    <div class="file-info" id="fileInfo1">Nenhum arquivo selecionado</div>
                 </div>
 
                 <div class="upload-box" id="uploadBox2">
@@ -438,710 +350,523 @@
                     <button class="upload-btn" onclick="document.getElementById('file2').click()">
                         Selecionar Arquivo
                     </button>
-                    <div class="file-info" id="fileInfo2"></div>
+                    <div class="file-info" id="fileInfo2">Nenhum arquivo selecionado</div>
                 </div>
             </div>
 
-            <div class="options-section">
-                <h3>⚙️ Opções de Soma</h3>
-                <div class="warning-tooltip">
-                    ℹ️ <strong>Info:</strong> As colunas G (Rlz.), R (D-0) e S (D-0 Coban) não contêm valores negativos.
-                </div>
-                <div class="info-tooltip">
-                    💡 <strong>Dica:</strong> Use "Verificar Erros" para analisar as planilhas antes do processamento.
-                </div>
-                
-                <h4 style="color: #333; margin: 15px 0 10px 0;">📊 Colunas para Somar:</h4>
-                <div class="column-options">
-                    <div class="option-group">
-                        <input type="radio" id="optionGRS" name="somaOpcao" value="GRS" checked>
-                        <label for="optionGRS">Somar Colunas G + R + S</label>
-                    </div>
-                    <div class="option-group">
-                        <input type="radio" id="optionRS" name="somaOpcao" value="RS">
-                        <label for="optionRS">Somar apenas Colunas R + S</label>
-                    </div>
-                </div>
-                
-                <h4 style="color: #333; margin: 20px 0 10px 0;">🔢 Tratamento de Valores Negativos:</h4>
-                <div class="column-options">
-                    <div class="option-group">
-                        <input type="radio" id="negativoIncluir" name="negativoOpcao" value="incluir" checked>
-                        <label for="negativoIncluir">Incluir valores negativos (padrão)</label>
-                    </div>
-                    <div class="option-group">
-                        <input type="radio" id="negativoZerar" name="negativoOpcao" value="zerar">
-                        <label for="negativoZerar">Substituir negativos por zero</label>
-                    </div>
-                    <div class="option-group">
-                        <input type="radio" id="negativoAbs" name="negativoOpcao" value="absoluto">
-                        <label for="negativoAbs">Usar valor absoluto</label>
-                    </div>
-                </div>
-            </div>
-
-            <div style="text-align: center;">
-                <button class="verify-btn" id="verifyBtn" onclick="verificarErros()" disabled>
+            <!-- Seção de Controles -->
+            <div class="controls">
+                <button class="btn btn-secondary" id="verifyBtn" onclick="verificarErros()" disabled>
                     🔍 Verificar Erros
                 </button>
-                <button class="process-btn" id="processBtn" onclick="processarPlanilhas()" disabled>
-                    🔢 Processar e Somar Planilhas
+                <button class="btn btn-primary" id="processBtn" onclick="processarPlanilhas()" disabled>
+                    🔢 Processar e Somar
                 </button>
             </div>
 
-            <div class="error" id="errorMsg" style="display: none;"></div>
-
-            <div class="error-details" id="errorDetails">
-                <h4>🔍 Detalhes da Verificação</h4>
-                <ul class="error-list" id="errorList"></ul>
+            <!-- Seção de Status -->
+            <div id="statusSection" class="status-section">
+                <div id="statusMessage"></div>
             </div>
 
-            <div class="results-section" id="resultsSection">
-                <div class="summary" id="summarySection">
-                    <h3>📋 Resumo do Processamento</h3>
-                    <div class="summary-stats" id="summaryStats"></div>
+            <!-- Detalhes de Erro -->
+            <div id="errorDetails" class="error-details">
+                <h4>📋 Detalhes da Verificação</h4>
+                <div id="errorList" class="error-list"></div>
+            </div>
+
+            <!-- Loading -->
+            <div id="loadingSection" class="loading">
+                <div class="spinner"></div>
+                <p>Processando planilhas...</p>
+            </div>
+
+            <!-- Seção de Resultados -->
+            <div id="resultsSection" class="results-section">
+                <div class="results-header">
+                    <h3>📊 Resultados da Soma</h3>
+                    <div class="stats" id="statsContainer">
+                        <!-- Stats serão inseridas aqui -->
+                    </div>
                 </div>
 
                 <div class="table-container">
-                    <div class="table-header">
-                        <h3>🎯 Resultado da Soma por Identificação (A, B, D, E)</h3>
-                    </div>
-                    
-                    <div class="table-actions">
-                        <button class="copy-btn" onclick="copiarTabela()">📋 Copiar Tabela</button>
-                        <button class="export-btn" onclick="exportarExcel()">📊 Exportar Excel</button>
-                    </div>
+                    <table class="results-table" id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>Prefixo (A)</th>
+                                <th>Dependência (B)</th>
+                                <th>Carteira (D)</th>
+                                <th>Tipo Carteira (E)</th>
+                                <th>Coluna G (Rlz.)</th>
+                                <th>Coluna R (D-0)</th>
+                                <th>Total Soma</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody">
+                            <!-- Resultados serão inseridos aqui -->
+                        </tbody>
+                    </table>
+                </div>
 
-                    <div class="table-wrapper">
-                        <div class="loading" id="loadingMsg">
-                            <div class="spinner"></div>
-                            <p>Processando dados...</p>
-                        </div>
-                        <table id="resultTable" style="display: none;">
-                            <thead>
-                                <tr>
-                                    <th>Prefixo (A)</th>
-                                    <th>Dependência (B)</th>
-                                    <th>Carteira (D)</th>
-                                    <th>Tipo Carteira (E)</th>
-                                    <th>Coluna G</th>
-                                    <th>Coluna R</th>
-                                    <th>Coluna S</th>
-                                    <th>Total Soma</th>
-                                </tr>
-                            </thead>
-                            <tbody id="resultTableBody">
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="copiarTabela()">
+                        📋 Copiar Tabela
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportarExcel()">
+                        📥 Exportar para Excel
+                    </button>
+                    <button class="btn btn-secondary" onclick="limparResultados()">
+                        🗑️ Limpar Resultados
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Variáveis globais
         let planilha1Data = null;
         let planilha2Data = null;
-        let resultadoFinal = [];
+        let file1Name = '';
+        let file2Name = '';
+        let resultadosOriginais = [];
+        let errosEncontrados = [];
 
-        // Função para lidar com drag and drop
-        function setupDragAndDrop(uploadBox, fileInput, fileInfo, fileNum) {
-            uploadBox.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadBox.classList.add('dragover');
-            });
+        // Event Listeners para drag and drop
+        setupDragAndDrop();
 
-            uploadBox.addEventListener('dragleave', () => {
-                uploadBox.classList.remove('dragover');
-            });
-
-            uploadBox.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadBox.classList.remove('dragover');
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    fileInput.files = files;
-                    handleFileSelect(fileInput, fileInfo, fileNum);
-                }
+        function setupDragAndDrop() {
+            const uploadBoxes = document.querySelectorAll('.upload-box');
+            
+            uploadBoxes.forEach(box => {
+                box.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    box.classList.add('dragover');
+                });
+                
+                box.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    box.classList.remove('dragover');
+                });
+                
+                box.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    box.classList.remove('dragover');
+                    
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        const input = box.querySelector('.file-input');
+                        input.files = files;
+                        handleFileSelect(input, box.id);
+                    }
+                });
             });
         }
 
-        // Configurar drag and drop para ambas as caixas
-        setupDragAndDrop(
-            document.getElementById('uploadBox1'),
-            document.getElementById('file1'),
-            document.getElementById('fileInfo1'),
-            1
-        );
-
-        setupDragAndDrop(
-            document.getElementById('uploadBox2'),
-            document.getElementById('file2'),
-            document.getElementById('fileInfo2'),
-            2
-        );
-
-        // Função para selecionar arquivo
+        // Event Listeners para seleção de arquivos
         document.getElementById('file1').addEventListener('change', (e) => {
-            handleFileSelect(e.target, document.getElementById('fileInfo1'), 1);
+            handleFileSelect(e.target, 'uploadBox1');
         });
 
         document.getElementById('file2').addEventListener('change', (e) => {
-            handleFileSelect(e.target, document.getElementById('fileInfo2'), 2);
+            handleFileSelect(e.target, 'uploadBox2');
         });
 
-        // Event listeners para mudança de opção de soma
-        document.querySelectorAll('input[name="somaOpcao"]').forEach(radio => {
-            radio.addEventListener('change', () => {
-                if (resultadoFinal.length > 0) {
-                    // Reprocessar com nova opção
-                    const novoResultado = processarDados(planilha1Data, planilha2Data);
-                    resultadoFinal = novoResultado;
-                    exibirResultados(resultadoFinal);
-                }
-            });
-        });
-
-        // Event listeners para mudança de opção de valores negativos
-        document.querySelectorAll('input[name="negativoOpcao"]').forEach(radio => {
-            radio.addEventListener('change', () => {
-                if (resultadoFinal.length > 0) {
-                    // Reprocessar com nova opção de negativos
-                    const novoResultado = processarDados(planilha1Data, planilha2Data);
-                    resultadoFinal = novoResultado;
-                    exibirResultados(resultadoFinal);
-                }
-            });
-        });
-
-        function handleFileSelect(input, fileInfo, fileNum) {
+        function handleFileSelect(input, boxId) {
             const file = input.files[0];
+            const fileInfo = document.getElementById('fileInfo' + boxId.slice(-1));
+            
             if (file) {
-                const fileName = file.name;
-                const fileSize = (file.size / 1024 / 1024).toFixed(2);
-                
                 fileInfo.innerHTML = `
-                    <strong>📁 ${fileName}</strong><br>
-                    Tamanho: ${fileSize} MB<br>
-                    Tipo: ${file.type}
+                    <strong>📁 ${file.name}</strong><br>
+                    Tamanho: ${formatFileSize(file.size)}<br>
+                    Tipo: ${file.type || 'Excel'}
                 `;
-                fileInfo.style.display = 'block';
                 
-                readExcelFile(file, fileNum);
+                readExcelFile(file, parseInt(boxId.slice(-1)));
+            } else {
+                fileInfo.textContent = 'Nenhum arquivo selecionado';
             }
         }
 
-        function readExcelFile(file, fileNum) {
+        function readExcelFile(file, planilhaNum) {
+            showStatus('Lendo arquivo...', 'info');
+            
             const reader = new FileReader();
+            
             reader.onload = function(e) {
                 try {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[sheetName];
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
                     
-                    // Converter para array de arrays, pulando as 2 primeiras linhas
+                    // Ler dados pulando 2 linhas de cabeçalho
                     const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
-                        header: 1,
+                        header: 1, 
                         skiprows: 2,
-                        defval: null
+                        defval: null 
                     });
                     
-                    if (fileNum === 1) {
+                    if (planilhaNum === 1) {
                         planilha1Data = jsonData;
+                        file1Name = file.name;
                     } else {
                         planilha2Data = jsonData;
+                        file2Name = file.name;
                     }
                     
-                    checkFilesReady();
+                    showStatus(`Arquivo ${file.name} carregado com sucesso!`, 'success');
+                    updateButtonStates();
+                    
                 } catch (error) {
-                    mostrarErro(`Erro ao processar ${file.name}: ${error.message}`);
+                    showError(`Erro ao ler o arquivo ${file.name}: ${error.message}`);
+                    if (planilhaNum === 1) {
+                        planilha1Data = null;
+                    } else {
+                        planilha2Data = null;
+                    }
                 }
             };
+            
+            reader.onerror = function() {
+                showError(`Erro ao carregar o arquivo ${file.name}`);
+            };
+            
             reader.readAsArrayBuffer(file);
         }
 
-        function checkFilesReady() {
-            const processBtn = document.getElementById('processBtn');
-            const verifyBtn = document.getElementById('verifyBtn');
-            if (planilha1Data && planilha2Data) {
-                processBtn.disabled = false;
-                processBtn.style.opacity = '1';
-                verifyBtn.disabled = false;
-                verifyBtn.style.opacity = '1';
-            }
-        }
-
-        function mostrarErro(mensagem) {
-            const errorMsg = document.getElementById('errorMsg');
-            errorMsg.textContent = mensagem;
-            errorMsg.style.display = 'block';
-            setTimeout(() => {
-                errorMsg.style.display = 'none';
-            }, 5000);
-        }
-
         function verificarErros() {
+            errosEncontrados = [];
             const errorDetails = document.getElementById('errorDetails');
             const errorList = document.getElementById('errorList');
+            
             errorList.innerHTML = '';
-            
-            let erros = [];
-            let avisos = [];
-            
-            // Verificar se os dados foram carregados
-            if (!planilha1Data || !planilha2Data) {
-                erros.push('Uma ou ambas as planilhas não foram carregadas corretamente.');
-            }
-            
-            // Verificar estrutura das planilhas
-            if (planilha1Data && planilha2Data) {
-                // Verificar número de colunas
-                const maxCols1 = Math.max(...planilha1Data.map(row => row ? row.length : 0));
-                const maxCols2 = Math.max(...planilha2Data.map(row => row ? row.length : 0));
-                
-                if (maxCols1 < 27) {
-                    erros.push(`Planilha 1 possui apenas ${maxCols1} colunas, mas são necessárias pelo menos 27 colunas.`);
-                }
-                
-                if (maxCols2 < 27) {
-                    erros.push(`Planilha 2 possui apenas ${maxCols2} colunas, mas são necessárias pelo menos 27 colunas.`);
-                }
-                
-                // Verificar valores negativos nas colunas
-                let countNegativos1 = 0;
-                let countNegativos2 = 0;
-                
-                planilha1Data.forEach((row, index) => {
-                    if (row && row.length >= 27) {
-                        const g = parseFloat(row[6]) || 0;
-                        const r = parseFloat(row[17]) || 0;
-                        const s = parseFloat(row[18]) || 0; // Coluna S (D-0 Coban)
-                        if (g < 0 || r < 0 || s < 0) countNegativos1++;
-                    }
-                });
-                
-                planilha2Data.forEach((row, index) => {
-                    if (row && row.length >= 27) {
-                        const g = parseFloat(row[6]) || 0;
-                        const r = parseFloat(row[17]) || 0;
-                        const s = parseFloat(row[18]) || 0; // Coluna S (D-0 Coban)
-                        if (g < 0 || r < 0 || s < 0) countNegativos2++;
-                    }
-                });
-                
-                if (countNegativos1 > 0) {
-                    avisos.push(`Planilha 1: ${countNegativos1} registros com valores negativos (principalmente na Coluna S - percentuais normais).`);
-                }
-                
-                if (countNegativos2 > 0) {
-                    avisos.push(`Planilha 2: ${countNegativos2} registros com valores negativos (principalmente na Coluna S - percentuais normais).`);
-                }
-                
-                // Verificar dados de identificação
-                let countNull1 = 0;
-                let countNull2 = 0;
-                let countNumeric1 = 0;
-                let countNumeric2 = 0;
-                
-                planilha1Data.forEach((row, index) => {
-                    if (row && row.length >= 5) {
-                        const a = row[0], b = row[1], d = row[3], e = row[4];
-                        if (a === null || b === null || d === null || e === null) {
-                            countNull1++;
-                        }
-                        if (typeof a === 'number' || !isNaN(a)) countNumeric1++;
-                    }
-                });
-                
-                planilha2Data.forEach((row, index) => {
-                    if (row && row.length >= 5) {
-                        const a = row[0], b = row[1], d = row[3], e = row[4];
-                        if (a === null || b === null || d === null || e === null) {
-                            countNull2++;
-                        }
-                        if (typeof a === 'number' || !isNaN(a)) countNumeric2++;
-                    }
-                });
-                
-                if (countNull1 > 0) {
-                    avisos.push(`Planilha 1: ${countNull1} registros com dados de identificação nulos (serão ignorados).`);
-                }
-                
-                if (countNull2 > 0) {
-                    avisos.push(`Planilha 2: ${countNull2} registros com dados de identificação nulos (serão ignorados).`);
-                }
-                
-                // Verificar correspondência de chaves
-                const chaves1 = new Set();
-                const chaves2 = new Set();
-                
-                planilha1Data.forEach(row => {
-                    if (row && row.length >= 5) {
-                        const a = row[0], b = row[1], d = row[3], e = row[4];
-                        if (a !== null && b !== null && d !== null && e !== null) {
-                            chaves1.add(`${a}|${b}|${d}|${e}`);
-                        }
-                    }
-                });
-                
-                planilha2Data.forEach(row => {
-                    if (row && row.length >= 5) {
-                        const a = row[0], b = row[1], d = row[3], e = row[4];
-                        if (a !== null && b !== null && d !== null && e !== null) {
-                            chaves2.add(`${a}|${b}|${d}|${e}`);
-                        }
-                    }
-                });
-                
-                const chavesComuns = [...chaves1].filter(chave => chaves2.has(chave));
-                const chavesSoPlan1 = [...chaves1].filter(chave => !chaves2.has(chave));
-                const chavesSoPlan2 = [...chaves2].filter(chave => !chaves1.has(chave));
-                
-                if (chavesComuns.length === 0) {
-                    avisos.push('Nenhuma chave de identificação corresponde entre as planilhas. Todas as linhas serão adicionadas como novos registros.');
-                } else {
-                    avisos.push(`${chavesComuns.length} registros correspondentes encontrados para soma.`);
-                }
-                
-                if (chavesSoPlan1.length > 0) {
-                    avisos.push(`${chavesSoPlan1.length} registros únicos na Planilha 1.`);
-                }
-                
-                if (chavesSoPlan2.length > 0) {
-                    avisos.push(`${chavesSoPlan2.length} registros únicos na Planilha 2.`);
-                }
-            }
-            
-            // Exibir resultados
-            if (erros.length === 0 && avisos.length === 0) {
-                errorList.innerHTML = '<li style="color: #2e7d32; border-left-color: #4caf50;">✅ Nenhum erro ou aviso encontrado. As planilhas estão prontas para processamento.</li>';
-            }
-            
-            erros.forEach(erro => {
-                errorList.innerHTML += `<li style="color: #c62828; border-left-color: #f44336;">❌ ${erro}</li>`;
-            });
-            
-            avisos.forEach(aviso => {
-                errorList.innerHTML += `<li style="color: #e65100; border-left-color: #ff9800;">⚠️ ${aviso}</li>`;
-            });
-            
             errorDetails.style.display = 'block';
+            
+            let infoText = '<h4>📋 Resultado da Verificação</h4>';
+            
+            if (!planilha1Data || !planilha2Data) {
+                errosEncontrados.push('Ambas as planilhas devem ser carregadas');
+                infoText += '<p>❌ <strong>Erro:</strong> Uma ou ambas as planilhas não foram carregadas.</p>';
+            } else {
+                infoText += '<p>✅ <strong>Sucesso:</strong> Ambas as planilhas foram carregadas.</p>';
+                
+                // Verificar estrutura das planilhas
+                if (planilha1Data.length < 1) {
+                    errosEncontrados.push('Planilha 1 está vazia');
+                    infoText += '<p>❌ <strong>Erro:</strong> Planilha 1 não contém dados.</p>';
+                }
+                
+                if (planilha2Data.length < 1) {
+                    errosEncontrados.push('Planilha 2 está vazia');
+                    infoText += '<p>❌ <strong>Erro:</strong> Planilha 2 não contém dados.</p>';
+                }
+                
+                // Verificar se as colunas G e R existem (índices 6 e 17)
+                if (planilha1Data.length > 0 && planilha1Data[0].length <= 17) {
+                    errosEncontrados.push('Planilha 1 não contém colunas suficientes (precisa de pelo menos 18 colunas)');
+                    infoText += '<p>❌ <strong>Erro:</strong> Planilha 1 não contém colunas suficientes.</p>';
+                }
+                
+                if (planilha2Data.length > 0 && planilha2Data[0].length <= 17) {
+                    errosEncontrados.push('Planilha 2 não contém colunas suficientes (precisa de pelo menos 18 colunas)');
+                    infoText += '<p>❌ <strong>Erro:</strong> Planilha 2 não contém colunas suficientes.</p>';
+                }
+                
+                // Verificar se há dados nas colunas G e R
+                if (planilha1Data.length > 0) {
+                    const dadosG1 = planilha1Data.filter(row => row && row[6] != null && row[6] !== '').length;
+                    const dadosR1 = planilha1Data.filter(row => row && row[17] != null && row[17] !== '').length;
+                    
+                    infoText += `<p>📊 <strong>Planilha 1:</strong> ${dadosG1} registros na Coluna G, ${dadosR1} registros na Coluna R</p>`;
+                }
+                
+                if (planilha2Data.length > 0) {
+                    const dadosG2 = planilha2Data.filter(row => row && row[6] != null && row[6] !== '').length;
+                    const dadosR2 = planilha2Data.filter(row => row && row[17] != null && row[17] !== '').length;
+                    
+                    infoText += `<p>📊 <strong>Planilha 2:</strong> ${dadosG2} registros na Coluna G, ${dadosR2} registros na Coluna R</p>`;
+                }
+            }
+            
+            if (errosEncontrados.length === 0) {
+                infoText += '<p>✅ <strong>Conclusão:</strong> Nenhum erro encontrado! As planilhas estão prontas para processamento.</p>';
+            } else {
+                infoText += '<p>❌ <strong>Conclusão:</strong> foram encontrados erros que impedem o processamento.</p>';
+                infoText += '<ul>';
+                errosEncontrados.forEach(erro => {
+                    infoText += `<li>${erro}</li>`;
+                });
+                infoText += '</ul>';
+            }
+            
+            errorList.innerHTML = infoText;
+            showStatus('Verificação concluída!', errosEncontrados.length === 0 ? 'success' : 'error');
         }
 
         function processarPlanilhas() {
-            const processBtn = document.getElementById('processBtn');
-            const resultsSection = document.getElementById('resultsSection');
-            const loadingMsg = document.getElementById('loadingMsg');
-            const resultTable = document.getElementById('resultTable');
+            if (errosEncontrados.length > 0) {
+                showError('Corrija os erros antes de processar as planilhas.');
+                return;
+            }
             
-            // Mostrar loading
-            processBtn.disabled = true;
-            resultsSection.style.display = 'block';
-            loadingMsg.style.display = 'block';
-            resultTable.style.display = 'none';
+            showLoading(true);
             
             setTimeout(() => {
                 try {
-                    const resultado = processarDados(planilha1Data, planilha2Data);
-                    resultadoFinal = resultado;
-                    
+                    const resultado = processarDados();
+                    resultadosOriginais = resultado;
                     exibirResultados(resultado);
-                    loadingMsg.style.display = 'none';
-                    resultTable.style.display = 'table';
-                    processBtn.disabled = false;
+                    showStatus('Processamento concluído com sucesso!', 'success');
                 } catch (error) {
-                    mostrarErro(`Erro ao processar dados: ${error.message}`);
-                    processBtn.disabled = false;
+                    showError(`Erro durante o processamento: ${error.message}`);
+                } finally {
+                    showLoading(false);
                 }
-            }, 500);
+            }, 100);
         }
 
-        function processarDados(data1, data2) {
-            const mapaDados = new Map();
-            const opcaoSoma = document.querySelector('input[name="somaOpcao"]:checked').value;
-            const opcaoNegativo = document.querySelector('input[name="negativoOpcao"]:checked').value;
-            
-            // Função para tratar valores negativos
-            function tratarNegativo(valor) {
-                if (opcaoNegativo === 'zerar') {
-                    return Math.max(0, valor);
-                } else if (opcaoNegativo === 'absoluto') {
-                    return Math.abs(valor);
-                } else {
-                    return valor; // incluir (padrão)
-                }
-            }
+        function processarDados() {
+            const resultado = [];
+            const dadosProcessados = new Map();
             
             // Processar primeira planilha
-            data1.forEach((row, index) => {
-                if (row && row.length >= 27) {
+            planilha1Data.forEach((row, index) => {
+                if (row && row.length >= 18) {
                     const a = row[0]; // Coluna A
                     const b = row[1]; // Coluna B
                     const d = row[3]; // Coluna D
                     const e = row[4]; // Coluna E
-                    const g = tratarNegativo(parseFloat(row[6]) || 0);  // Coluna G (Rlz.)
-                    const r = tratarNegativo(parseFloat(row[17]) || 0); // Coluna R (D-0)
-                    const s = tratarNegativo(parseFloat(row[18]) || 0); // Coluna S (D-0 Coban)
+                    const g = parseFloat(row[6]) || 0;  // Coluna G (Rlz.)
+                    const r = parseFloat(row[17]) || 0; // Coluna R (D-0)
                     
-                    // Verificar se os dados de identificação não são nulos
                     if (a !== null && a !== undefined && b !== null && b !== undefined && 
                         d !== null && d !== undefined && e !== null && e !== undefined) {
                         
                         const chave = `${a}|${b}|${d}|${e}`;
-                        mapaDados.set(chave, {
+                        dadosProcessados.set(chave, {
                             a: a,
                             b: b,
                             d: d,
                             e: e,
                             g: g,
-                            r: r,
-                            s: s,
-                            opcao: opcaoSoma
+                            r: r
                         });
                     }
                 }
             });
             
             // Processar segunda planilha (somar)
-            data2.forEach((row, index) => {
-                if (row && row.length >= 27) {
+            planilha2Data.forEach((row, index) => {
+                if (row && row.length >= 18) {
                     const a = row[0]; // Coluna A
                     const b = row[1]; // Coluna B
                     const d = row[3]; // Coluna D
                     const e = row[4]; // Coluna E
-                    const g = tratarNegativo(parseFloat(row[6]) || 0);  // Coluna G (Rlz.)
-                    const r = tratarNegativo(parseFloat(row[17]) || 0); // Coluna R (D-0)
-                    const s = tratarNegativo(parseFloat(row[18]) || 0); // Coluna S (D-0 Coban)
+                    const g = parseFloat(row[6]) || 0;  // Coluna G (Rlz.)
+                    const r = parseFloat(row[17]) || 0; // Coluna R (D-0)
                     
-                    // Verificar se os dados de identificação não são nulos
                     if (a !== null && a !== undefined && b !== null && b !== undefined && 
                         d !== null && d !== undefined && e !== null && e !== undefined) {
                         
                         const chave = `${a}|${b}|${d}|${e}`;
-                        const existente = mapaDados.get(chave);
-                        
-                        if (existente) {
-                            // Somar valores
-                            existente.g += g;
-                            existente.r += r;
-                            existente.s += s;
+                        if (dadosProcessados.has(chave)) {
+                            const item = dadosProcessados.get(chave);
+                            item.g += g;
+                            item.r += r;
                         } else {
-                            // Adicionar novo
-                            mapaDados.set(chave, {
+                            dadosProcessados.set(chave, {
                                 a: a,
                                 b: b,
                                 d: d,
                                 e: e,
                                 g: g,
-                                r: r,
-                                s: s,
-                                opcao: opcaoSoma
+                                r: r
                             });
                         }
                     }
                 }
             });
             
-            // Converter para array e calcular totais
-            const resultado = Array.from(mapaDados.values()).map(item => {
-                let total;
-                if (item.opcao === 'RS') {
-                    total = item.r + item.s; // Somar apenas R e S
-                } else {
-                    total = item.g + item.r + item.s; // Somar G + R + S
-                }
-                return {
+            // Converter para array
+            dadosProcessados.forEach(item => {
+                resultado.push({
                     ...item,
-                    total: total
-                };
+                    total: item.g + item.r
+                });
             });
             
-            // Ordenar por total decrescente
-            resultado.sort((a, b) => b.total - a.total);
-            
-            return resultado;
+            return resultado.sort((a, b) => {
+                // Ordenar por prefixo, depois por dependência
+                if (a.a !== b.a) return a.a - b.a;
+                return a.b.localeCompare(b.b);
+            });
         }
 
         function exibirResultados(resultado) {
-            const opcaoSoma = document.querySelector('input[name="somaOpcao"]:checked').value;
+            const tbody = document.getElementById('resultsBody');
+            const statsContainer = document.getElementById('statsContainer');
+            const resultsSection = document.getElementById('resultsSection');
             
-            // Atualizar resumo
-            const summaryStats = document.getElementById('summaryStats');
-            const totalRegistros = resultado.length;
-            const somaTotal = resultado.reduce((acc, item) => acc + item.total, 0);
-            const mediaTotal = somaTotal / totalRegistros;
-            const somaG = resultado.reduce((acc, item) => acc + item.g, 0);
-            const somaR = resultado.reduce((acc, item) => acc + item.r, 0);
-            const somaS = resultado.reduce((acc, item) => acc + item.s, 0);
-            
-            let resumoHtml = `
-                <div class="stat-box">
-                    <div class="stat-number">${totalRegistros.toLocaleString('pt-BR')}</div>
-                    <div class="stat-label">Registros Processados</div>
-                </div>
-            `;
-            
-            if (opcaoSoma === 'GRS') {
-                resumoHtml += `
-                    <div class="stat-box">
-                        <div class="stat-number">${somaG.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-                        <div class="stat-label">Soma Coluna G</div>
-                    </div>
-                `;
-            }
-            
-            resumoHtml += `
-                <div class="stat-box">
-                    <div class="stat-number">${somaR.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-                    <div class="stat-label">Soma Coluna R</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-number">${somaS.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-                    <div class="stat-label">Soma Coluna S</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-number">${somaTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-                    <div class="stat-label">${opcaoSoma === 'GRS' ? 'Total (G+R+S)' : 'Total (R+S)'}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-number">${mediaTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-                    <div class="stat-label">Média por Registro</div>
-                </div>
-            `;
-            
-            summaryStats.innerHTML = resumoHtml;
-            
-            // Atualizar cabeçalho da tabela
-            const table = document.getElementById('resultTable');
-            const thead = table.querySelector('thead');
-            const tbody = document.getElementById('resultTableBody');
             tbody.innerHTML = '';
             
-            if (opcaoSoma === 'RS') {
-                thead.innerHTML = `
-                    <tr>
-                        <th>Prefixo (A)</th>
-                        <th>Dependência (B)</th>
-                        <th>Carteira (D)</th>
-                        <th>Tipo Carteira (E)</th>
-                        <th>Coluna G (não somada)</th>
-                        <th>Coluna R</th>
-                        <th>Coluna S</th>
-                        <th>Total (R+S)</th>
-                    </tr>
-                `;
-            } else {
-                thead.innerHTML = `
-                    <tr>
-                        <th>Prefixo (A)</th>
-                        <th>Dependência (B)</th>
-                        <th>Carteira (D)</th>
-                        <th>Tipo Carteira (E)</th>
-                        <th>Coluna G</th>
-                        <th>Coluna R</th>
-                        <th>Coluna S</th>
-                        <th>Total (G+R+S)</th>
-                    </tr>
-                `;
-            }
+            let totalRegistros = resultado.length;
+            let totalG = 0;
+            let totalR = 0;
+            let totalGeral = 0;
             
-            // Atualizar dados da tabela
             resultado.forEach(item => {
                 const row = tbody.insertRow();
-                if (opcaoSoma === 'RS') {
-                    // Mostrar apenas colunas R e S (coluna G como não somada)
-                    row.innerHTML = `
-                        <td>${item.a}</td>
-                        <td>${item.b}</td>
-                        <td>${item.d}</td>
-                        <td>${item.e}</td>
-                        <td class="number" style="color: #999; font-style: italic;">${item.g.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                        <td class="number">${item.r.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                        <td class="number">${item.s.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                        <td class="number" style="font-weight: bold; color: #2e7d32;">${item.total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                    `;
-                } else {
-                    // Mostrar todas as colunas (G, R, S)
-                    row.innerHTML = `
-                        <td>${item.a}</td>
-                        <td>${item.b}</td>
-                        <td>${item.d}</td>
-                        <td>${item.e}</td>
-                        <td class="number">${item.g.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                        <td class="number">${item.r.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                        <td class="number">${item.s.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                        <td class="number" style="font-weight: bold; color: #2e7d32;">${item.total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                    `;
-                }
+                row.innerHTML = `
+                    <td>${item.a || ''}</td>
+                    <td>${item.b || ''}</td>
+                    <td>${item.d || ''}</td>
+                    <td>${item.e || ''}</td>
+                    <td>${formatNumber(item.g)}</td>
+                    <td>${formatNumber(item.r)}</td>
+                    <td><strong>${formatNumber(item.total)}</strong></td>
+                `;
+                
+                totalG += item.g;
+                totalR += item.r;
+                totalGeral += item.total;
             });
+            
+            // Atualizar estatísticas
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${totalRegistros}</div>
+                    <div class="stat-label">Registros Processados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${formatNumber(totalG)}</div>
+                    <div class="stat-label">Total Coluna G</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${formatNumber(totalR)}</div>
+                    <div class="stat-label">Total Coluna R</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${formatNumber(totalGeral)}</div>
+                    <div class="stat-label">Total Geral</div>
+                </div>
+            `;
+            
+            resultsSection.style.display = 'block';
         }
 
         function copiarTabela() {
-            const table = document.getElementById('resultTable');
+            const table = document.getElementById('resultsTable');
             const rows = table.querySelectorAll('tr');
-            let texto = 'Prefixo\tDependência\tCarteira\tTipo Carteira\tColuna G\tColuna R\tColuna S\tTotal Soma\n';
             
-            rows.forEach((row, index) => {
-                if (index > 0) { // Pular cabeçalho
-                    const cells = row.querySelectorAll('td');
-                    const rowData = Array.from(cells).map(cell => {
-                        return cell.textContent.replace(/\./g, '').replace(/,/g, '.');
-                    });
-                    texto += rowData.join('\t') + '\n';
-                }
+            let clipboardData = '';
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td, th');
+                const rowData = Array.from(cells).map(cell => cell.textContent).join('\t');
+                clipboardData += rowData + '\n';
             });
             
-            navigator.clipboard.writeText(texto).then(() => {
-                const btn = event.target;
-                const originalText = btn.textContent;
-                btn.textContent = '✅ Copiado!';
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                }, 2000);
-            }).catch(err => {
-                mostrarErro('Erro ao copiar para a área de transferência');
+            navigator.clipboard.writeText(clipboardData).then(() => {
+                showStatus('Tabela copiada para a área de transferência!', 'success');
+            }).catch(() => {
+                showError('Erro ao copiar tabela. Tente novamente.');
             });
         }
 
         function exportarExcel() {
-            if (resultadoFinal.length === 0) {
-                mostrarErro('Nenhum dado para exportar');
+            if (resultadosOriginais.length === 0) {
+                showError('Nenhum resultado para exportar.');
                 return;
             }
             
-            const ws_data = [
-                ['Prefixo (A)', 'Dependência (B)', 'Carteira (D)', 'Tipo Carteira (E)', 'Coluna G', 'Coluna R', 'Coluna S', 'Total Soma'],
-                ...resultadoFinal.map(item => [
-                    item.a,
-                    item.b,
-                    item.d,
-                    item.e,
-                    item.g,
-                    item.r,
-                    item.s,
-                    item.total
-                ])
-            ];
+            try {
+                const ws_data = [
+                    ['Prefixo (A)', 'Dependência (B)', 'Carteira (D)', 'Tipo Carteira (E)', 'Coluna G (Rlz.)', 'Coluna R (D-0)', 'Total Soma']
+                ];
+                
+                resultadosOriginais.forEach(item => {
+                    ws_data.push([
+                        item.a,
+                        item.b,
+                        item.d,
+                        item.e,
+                        item.g,
+                        item.r,
+                        item.total
+                    ]);
+                });
+                
+                const ws = XLSX.utils.aoa_to_sheet(ws_data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Resultados');
+                
+                const fileName = `resultado_soma_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                
+                showStatus('Arquivo Excel exportado com sucesso!', 'success');
+            } catch (error) {
+                showError(`Erro ao exportar: ${error.message}`);
+            }
+        }
+
+        function limparResultados() {
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('errorDetails').style.display = 'none';
+            resultadosOriginais = [];
+            errosEncontrados = [];
+            showStatus('Resultados limpos.', 'info');
+        }
+
+        function updateButtonStates() {
+            const verifyBtn = document.getElementById('verifyBtn');
+            const processBtn = document.getElementById('processBtn');
             
-            const ws = XLSX.utils.aoa_to_sheet(ws_data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Soma Planilhas');
+            const bothFilesLoaded = planilha1Data && planilha2Data;
             
-            // Ajustar larguras das colunas
-            const cols = [
-                { wch: 12 }, // Prefixo
-                { wch: 20 }, // Dependência
-                { wch: 10 }, // Carteira
-                { wch: 25 }, // Tipo Carteira
-                { wch: 15 }, // Coluna G
-                { wch: 15 }, // Coluna R
-                { wch: 15 }, // Coluna S
-                { wch: 15 }  // Total
-            ];
-            ws['!cols'] = cols;
+            verifyBtn.disabled = !bothFilesLoaded;
+            processBtn.disabled = !bothFilesLoaded;
+        }
+
+        function showStatus(message, type) {
+            const statusSection = document.getElementById('statusSection');
+            const statusMessage = document.getElementById('statusMessage');
             
-            XLSX.writeFile(wb, 'resultado_soma_planilhas.xlsx');
+            statusSection.className = `status-section status-${type}`;
+            statusMessage.innerHTML = message;
+            statusSection.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusSection.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        function showError(message) {
+            showStatus(`❌ ${message}`, 'error');
+        }
+
+        function showLoading(show) {
+            const loadingSection = document.getElementById('loadingSection');
+            loadingSection.style.display = show ? 'block' : 'none';
+        }
+
+        function formatNumber(num) {
+            if (num === null || num === undefined || isNaN(num)) return '0,00';
+            return new Intl.NumberFormat('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(num);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
     </script>
 </body>
